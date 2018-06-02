@@ -1,0 +1,58 @@
+<style>
+a.selected {
+  font-weight: bold;
+}
+#cropper {
+  position: absolute; 
+  display: none;
+  border: 2px dashed #000; 
+  background-color: rgba(265,265,265,0.2);
+}
+#pic {
+  width: 200px; 
+  height: 200px; 
+  border: 1px solid #888; 
+  vertical-align: top;
+}
+#canvas {
+  width: 150px;
+  height: 150px;
+}
+ul {
+  list-style-type: none;
+  margin-left: 0;
+}
+footer {
+  display: none;
+}
+</style>
+<div style="margin-top: 10px;">
+  <div style="float: left; margin-right: 10px;">
+    <ul>
+      <li>
+        <a class='btn' href="#crop" style='width: 50px;'>Crop</a><a class='btn' href="#drag" style='width: 50px;'>Drag</a>
+      </li>
+      <li style="padding-top: 5px;">
+        <a class='btn' href="#rotate" style='width: 50px;'>Rotate</a>
+        <a class='btn' href="#zoomin">+</a><a class='btn' href="#zoomout">-</a>
+      </li>
+      <li style="padding-top: 5px; font-style: italic;" id="hint">Tweak the picture,<br/>right-click to save.</li>
+      <li style='padding-top: 17px;'>
+        <a id="reversed" class='btn' title="reverse contrast" href="#reverse"><span style="background-color: #000; display: inline-block; width: 0; height: 0; border-left: 13px solid transparent; border-right: 13px solid transparent; border-top: 9px solid #fff; border-bottom: 9px solid #fff;">&nbsp;</span></a><a class='btn color' title="grayscale" href="#grayscale"><span style="background-color: #888; display: inline-block; width: 26px;">&nbsp;</span></a><a class='btn color' title="yellow" href="#yellow"><span style="background-color: #ff0; display: inline-block; width: 26px;">&nbsp;</span></a>
+      </li>
+      <li>
+        <a class='btn color' title="red" href="#red"><span style="background-color: #c00; display: inline-block; width: 26px;">&nbsp;</span></a><a class='btn color' title="blue" href="#blue"><span style="background-color: #00c; display: inline-block; width: 26px;">&nbsp;</span></a><a class='btn color' title="green" href="#green"><span style="background-color: #0c0; display: inline-block; width: 26px;">&nbsp;</span></a>
+      </li>
+      <li>
+        <a class='btn color' title="orange" href="#orange"><span style="background-color: #ffa500; display: inline-block; width: 26px;">&nbsp;</span></a><a class='btn color' title="purple" href="#purple"><span style="background-color: #551a8b; display: inline-block; width: 26px;">&nbsp;</span></a><a class='btn' title="clear colors" href="#reset"><span style="display: inline-block; width: 26px; font-size: 30px; font-weight: bold; margin-top: -3px; margin-bottom: 3px;">&times;</span></a>
+      </li>
+    </ul>
+  </div>
+  <div id="pane" style="vertical-align: top; float: left;">
+    <img src="" id="pic"/>
+    <canvas width="300" height="300" style="display: none; width: 150px; height: 150px;" id="canvas"></canvas>
+  </div>
+  <div style="clear: left;"></div>
+</div>
+<div id="cropper""></div>
+<% add_script 'editor.js' %>

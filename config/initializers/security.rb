@@ -1,0 +1,1 @@
+GoSecure::SecureJson.db_encryption(false)

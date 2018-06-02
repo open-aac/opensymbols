@@ -1,0 +1,148 @@
+<style>
+  .keyword {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    border-radius: 5px;
+  }
+  .keyword:hover {
+    background: #f4f4f4;
+  }
+  .keyword span {
+    float: left;
+  }
+  .keyword:after {
+    clear: both;
+    content: "";
+    display: block;
+  }
+  .keyword a {
+    float: right;
+  }
+
+  .results .result {
+    float: left;
+    width: 100px;
+    height: 120px;
+    margin: 5px;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    text-align: center;
+  }
+  .results .result .img_holder {
+    display: block;
+    width: 100px;
+    height: 85px;
+    overflow: hidden;
+  }
+  .results .result img {
+    width: 80px; 
+    height: 80px;
+    padding: 5px;
+  }
+  .results .result .name {
+    display: block;
+    height: 17px;
+    overflow: hidden;
+  }
+  .results .result .meta {
+    display: block;
+    height: 15px;
+    font-size: 12px;
+    color: #aaa;
+    overflow: hidden;
+  }
+</style>
+<%= render 'shared/header' %>
+<div class="row">
+  <div class="span6">
+    <h1><%= @symbol[:name] %></h1>
+    <img id="symbol" src="<%= @symbol[:image_url] %>" style="vertical-align: middle; max-height: 400px; max-width: 400px; border: 1px solid #888;"/>
+    <dl class="dl-horizontal">
+      <dt></dt>
+        <dd style="padding-bottom: 5px;">
+          <a href="#" class="btn" id="edit">Edit Symbol</a>
+          <a href="#" class="btn" id="badge">Make a Badge</a>
+        </dd>
+      <dt>url:</dt>
+        <dd><a href="<%= @symbol[:source_url] || @repo.settings['url'] %>"><%= @symbol[:source_url] || "Source not available, see web site" %></a></dd>
+      <dt>type:</dt>
+        <dd><%= @symbol[:extension] || 'unknown' %></dd>
+      <dt>license:</dt>
+        <dd><%= @symbol[:license] %> 
+        <% if @symbol[:license_url] && @symbol[:license_url] != "" %>
+          <a href="<%= @symbol[:license_url] %>">more info</a></dd>
+        <% end %>
+      <dt>author:</dt>
+        <dd><a href="<%= @symbol[:author_url] || @repo.settings['url'] %>"><%= @symbol[:author] || 'unknown' %></a></dd>
+      <dt>repository:</dt>
+        <dd><a href="<%= @repo.settings['url'] %>"><%= @repo.settings['name'] || 'unknown' %></a></dd>
+      <span class='authenticated'>
+        <dt>safe search:</dt>
+          <dd>
+            <label style='padding: 10px 0;'>
+              <input type='checkbox' <%= 'checked' if !@symbol[:unsafe_result] %> id='safe' style='display: inline;'/>
+              allow in safe search results
+            </label>
+          </dd>
+      </span>
+    </dl>
+  </div>
+  <div class='span6 authenticated'>
+    <table>
+      <tbody>
+        <tr>
+          <th style='text-align: right; vertical-align: top; padding-right: 15px;'>Locale</th>
+          <td>
+            <input type='text' id='symbol_locale' value='<%= @symbol[:locale] %>' style='width: 30px; margin-bottom: 0;'/>
+            <a href='#' id='symbol_reload' class='btn'>Update</a>
+          </td>
+        </tr>
+        <tr>
+          <th style='text-align: right; vertical-align: top; padding-right: 15px;'>Name</th>
+          <td><input type='text' id='symbol_name' value='<%= @symbol[:name] %>'/></td>
+        </tr>
+        <tr>
+          <th style='text-align: right; vertical-align: top; padding-right: 15px;'>Description</th>
+          <td style='padding-bottom: 20px;'>
+            <%= text_area_tag 'symbol_description', @symbol[:description], rows: 5, placeholder: "Symbol description", style: 'width: 100%;' %>
+            <a href='#' class='btn' id='update_symbol'>Update Symbol</a>
+          </td>
+        </tr>
+        <tr>
+          <th style='text-align: right; vertical-align: top; padding-right: 15px;'>Boosts</th>
+          <td style='padding-bottom: 10px;'> 
+            <div id='boosts'></div>
+            <div>
+              <input type='text' id='boost_keyword' style='margin-bottom: 0;'>
+              <a href="#" id='boost' class='btn'>Boost</a>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <th style='text-align: right; vertical-align: top; padding-right: 15px;'>Defaults</th>
+          <td>
+            <div id='defaults'></div>
+            <div>
+              <input type='text' id='default_keyword' style='margin-bottom: 0;'>
+              <a href="#" id='default' class='btn'>Set Default</a>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+          </td>
+          <td style='padding-top: 30px;'>
+            <input type="text" id="search_term" style='margin-bottom: 0;' placeholder='search for related symbols'/>
+            <a href="#" id="search" class='btn'>Search</a>
+            <div id="search_results" class='results'></div>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+</div>
+<script>
+  var symbol = <%= @symbol.to_json.html_safe %>;
+</script>
+<% add_script '/symbol.js' %>

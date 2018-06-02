@@ -1,0 +1,161 @@
+<style>
+  .results .result {
+    float: left;
+    width: 200px;
+    height: 220px;
+    margin: 5px;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    text-align: center;
+  }
+  .results .result .img_holder {
+    display: block;
+    width: 200px;
+    height: 185px;
+    overflow: hidden;
+  }
+  .results .result img {
+    width: 180px; 
+    height: 180px;
+    padding: 5px;
+  }
+  .results .result .name {
+    display: block;
+    height: 17px;
+    overflow: hidden;
+  }
+  .results .result .meta {
+    display: block;
+    height: 15px;
+    font-size: 12px;
+    color: #aaa;
+    overflow: hidden;
+  }
+  .results.smaller .result {
+    width: 150px;
+    height: 170px;
+  }
+  .results.smaller .result .img_holder {
+    width: 150px;
+    height: 135px;
+  }
+  .results.smaller .result img {
+    width: 130px;
+    height: 130px;
+  }
+  #request_symbol {
+    margin-top: 50px;
+  }
+  #add_symbol_holder {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  #request_symbol_form {
+    max-width: 600px; 
+    margin: 0 auto;
+  } 
+</style>
+
+<%= render "shared/header" %>
+<div class="row">
+  <div class="span12">
+  </div>
+</div>
+<div class="row">
+  <div class="span6" id="search_holder">
+    <form rel="/api/v1/search" id="search" class='form-inline'>
+      <label>
+      <h3>Search:</h3>
+      <input type="text" name="q" id="query" class="span3"/>
+      </label>
+      <button type="submit" class='btn btn-primary'>Search</button>
+      <button type="button" class="btn" id="clear">Clear</button>
+    </form>
+    <div id="message">
+      <p>
+      This is a collection of <a href="http://creativecommons.org/">open-licensed</a>
+      picture symbols that can be used for augmentative communication. 
+      The collection pulls from multiple sources and currently includes 
+      access to more than 
+      <%= (SymbolRepository.all.map{|r| r.settings['n_symbols'] || 0 }.sum || 0) / 1000 %>,000 
+      symbols and icons!
+      </p>
+      <p>
+      Use the search box to search for communication symbols from:
+      </p>
+      <ul class="nav nav-tabs nav-stacked" style="width: 300px;">
+        <% SymbolRepository.all.sort_by{|r| r.settings['name'] }.each do |repo| %>
+          <li><a href="/repositories/<%= repo.repo_key %>"><%= repo.settings['name'] %></a></li>
+        <% end %>
+        <li><a href="/word_art">Make Your Own Basic Word Art</a></li>
+      </ul>
+      <p>This is definitely beta at the moment.
+      The reason I'm putting this up is because there's no standard way
+      for people to easily look up all the possible open-licensed symbols.
+      I needed one, and I thought others might benefit from one as well.
+      <a href="/api/v1/symbols/search?q=mask">Here's my API</a>, more to come
+      (including docs!) soon.
+    </div>
+    <div id="results" class="results">
+    </div>
+    <div style="clear: both;"></div>
+    <div id="request_symbol" style="display: none;">
+      <div style="text-align: center;" id="add_symbol_holder">
+        Can't find the right symbol?
+        <a href="#" id="add_symbol">Suggest a Symbol</a>
+        or try
+        <a href="#" id="google_image_search" target="_blank">Google</a>
+        or
+        <a href="#" id="flickr_search" target="_blank">Flickr</a>
+      </div>
+      <form id="request_symbol_form" class="form-horizontal" method="POST" action="/api/v1/symbols/requests">
+        <div class="control-group">
+          <h2>Request a Different Symbol</h2>
+          <p>We plan to enable submission of new symbols
+          to the repository. In the mean time you can provide
+          feedback on which symbols you'd like to see by using this
+          form. We'll keep track and it'll help our submitters know
+          the best places to start once the option is available.</p>
+          <p>Interested in being a symbol donor? Contact us!</p>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="symbol_name">Symbol label:</label>
+          <div class="controls">
+            <input type="text" class="span3" name="name" id="symbol_name"/>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="sumbol_first_letter">First letter of the symbol label:</label>
+          <div class="controls">
+            <input type="text" class="span1" name="first_letter" id="sumbol_first_letter"/> (i.e. "b" for "bacon". prove your humanity)
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="symbol_comments">Describe the symbol you'd like to see:</label>
+          <div class="controls">
+            <textarea class="span4" name="comments" style="height: 70px;" id="symbol_comments"></textarea>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="controls">
+            <button type="submit" class='btn btn-primary'>Request Symbol</button>
+            <button type="button" class='btn' id="cancel_symbol_request">Cancel</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="span6" id="examples_holder">
+    <div>
+      <h3 style="display: inline;">Examples:</h3>
+      &nbsp;<a href="#" id="more_examples">see more</a>
+    </div>
+    <div id="examples" class="results smaller"></div>
+  </div>
+</div>
+
+<% add_script "/index.js" %>
+<script>
+var S3Bucket = "<%= ENV['S3_BUCKET'] %>";
+</script>

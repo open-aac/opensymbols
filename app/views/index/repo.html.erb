@@ -1,0 +1,128 @@
+<%= render 'shared/header' %>
+<style>
+.result {
+  float: left;
+  width: 16.6%;
+  padding: 10px;
+  text-align: center;
+}
+.result .img_holder {
+  width: 100%;
+  padding-bottom: 100%;
+  height: 0;
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+.result img {
+  width: 180px;
+  height: 180px;
+}
+.result .name, .result .meta {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#symbols:after {
+  display: block;
+  content: "";
+  clear: left;
+}
+.default_word {
+  padding: 10px 20px;
+  border-bottom: 1px solid #eee;
+  width: auto;
+}
+.default_word:hover {
+  background: #f4f4f4;
+  border-radius: 10px;
+}
+.default_word .keyword {
+  width: 300px;
+  display: inline-block;
+  font-size: 25px;
+  cursor: pointer;
+}
+.default_word img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  object-position: center;
+}
+.default_word a {
+  font-size: 20px;
+  margin-left: 50px;
+}
+</style>
+<div class="row" style="margin-bottom: 20px;">
+  <div class="span3">
+    <img id="symbol" src="/repositories/<%= @repo.repo_key %>.png" style="vertical-align: middle; max-height: 300px; max-width: 100%; border: 1px solid #888;"/>
+  </div>
+  <div class="span6">
+    <h1><%= @repo.settings['name'] %></h1>
+    <dl class="dl-horizontal">
+      <dt>Website</dt>
+        <dd style="padding-bottom: 5px;">
+          <a href="<%= @repo.settings['url'] %>"><%= @repo.settings['url'] %></a>
+        </dd>
+      <% if @repo.settings['default_attribution'] %>
+        <dt>Default License:</dt>
+          <dd><%= @repo.settings['default_attribution']['license'] %> 
+          <% if @repo.settings['default_attribution']['license_url'] && @repo.settings['default_attribution']['license_url'] != "" %>
+            <a href="<%= @repo.settings['default_attribution']['license_url'] %>">more info</a></dd>
+          <% end %>
+        <dt>Primary Author:</dt>
+          <dd><a href="<%= @repo.settings['default_attribution']['author_url'] || @repo.settings['url'] %>"><%= @repo.settings['default_attribution']['author_name'] || 'unknown' %></a></dd>
+      <% end %>
+      <dt>Symbols Shared:</dt>
+        <dd><%= commas(@repo.settings['n_symbols']) %></dd>
+      <dt>Description:</dt>
+        <dd><%= @repo.settings['description'] %></dd>
+    </dl>
+    <div class='authenticated'>
+      <a class='btn' href='#' id='set_defaults'>Set Default Core Symbols</a>
+      <a class='btn' href='#' id='review_defaults'>Review Default Core Symbols</a>
+      <a class='btn' href='#' id='list'>Clear</a>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div id="symbol_results">
+    <div id="symbols" data-repo_key="<%= @repo.repo_key %>">
+    </div>
+    <div style="text-align: center;">
+      <a id="more_symbols" href="#" class="btn btn-primary btn-large" style="display: none;">More Symbols</a>
+    </div>
+  </div>
+  <div id="symbol_defaults" style='display: none;'>
+    <div style='margin-bottom: 15px; text-align: center;'>
+      <a href='#' class='btn' id='previous_word' style='margin-right: 10px;'>Prev</a>
+      <input type="text" id="default_locale" style='margin-bottom: 0; width: 30px;'/>
+      <input type="text" id="default_word" style='margin-bottom: 0;'/>
+      <a href='#' class='btn' id='select'>Go</a>
+      <a href='#' class='btn' id='next_word' style='margin-left: 10px;'>Next</a>
+    </div>
+    <div id="symbol_default">
+      <div style='margin-bottom: 5px; text-align: center;'>
+        <h4>Select Default Symbol for "<span id='word'>Word</span>"</h4>
+        <input type="text" id="search_term" style='margin-bottom: 0;'/>
+        <a href='#' class='btn' id='search'>Search</a>
+      </div>
+      <div id="search_results" style='text-align: center; min-height: 300px;'>
+      </div>
+    </div>
+  </div>
+  <div id="defaults_review" style='display: none;'>
+    <div style='margin-bottom: 15px;'>
+      Locale: <input type="text" id="review_locale" style='margin-bottom: 0; width: 30px;'/>
+      <a href='#' class='btn' id='review'>Go</a>
+    </div>
+    <div id="defaults">
+    </div>
+  </div>
+</div>
+<% add_script '/repo.js' %>
+<script>
+  var S3Bucket = "<%= ENV['S3_BUCKET'] %>";
+</script>

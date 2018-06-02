@@ -1,0 +1,75 @@
+<style>
+a.selected {
+  font-weight: bold;
+}
+#cropper {
+  position: absolute; 
+  display: none;
+  border: 2px dashed #000; 
+  background-color: rgba(265,265,265,0.2);
+}
+#pic {
+  width: 200px; 
+  height: 200px; 
+  border: 1px solid #888; 
+  vertical-align: top;
+}
+#canvas {
+  width: 150px;
+  height: 150px;
+}
+ul {
+  list-style-type: none;
+  margin-left: 0;
+}
+footer {
+  display: none;
+}
+ul li.colors .btn {
+  padding: 4px 5px;
+}
+ul li.colors .btn span {
+  width: 34px;
+  height: 21px;
+  border: 1px solid #888;
+}
+body {
+/* background: linear-gradient(#fff, #8ccdff); */
+}
+</style>
+<div style="margin-top: 10px; ">
+  <div style="float: left; margin-right: 10px;">
+    <ul>
+      <li>
+        <input type='text' id='word' style='width: 145px; height: 30px;' placeholder="word">
+      </li>
+      <li class='settings' style="margin-top: -5px;">
+        <a class='btn' href="#zoomin">+</a><a class='btn' href="#zoomout">-</a>
+        <span id='zoom' style='margin-left: 5px; color: #888;'></span>
+      </li>
+      <li class='settings' style='padding-top: 17px;'>
+        <a class='btn' href="#previous_shape">&lt;</a>
+        <span id='shape' style='display: inline-block; width: 76px; line-height: 25px; height: 25px; border: 1px solid #ccc; overflow: hidden; vertical-align: middle; text-align: center;'>
+          Arial
+        </span>
+        <a class='btn' href="#next_shape">&gt;</a>
+      </li>
+      <li class='border_colors colors settings'>
+        <a class='btn color' title="black" data-colors="0, 0, 0" href="#reset"><span style="background-color: #000; display: inline-block;">&nbsp;</span></a><a class='btn color' title="silver" data-colors="200, 200, 200" href="#color"><span style="background-color: rgb(200, 200, 200); display: inline-block;">&nbsp;</span></a><a class='btn color' title="white" data-colors="255, 255, 255" href="#color"><span style="background-color: rgb(255, 255, 255); display: inline-block;">&nbsp;</span></a>
+      </li>
+      <li class='border_colors colors settings'>
+        <a class='btn color' title="red" data-colors="200, 0, 0" href="#color"><span style="background-color: rgb(200, 0, 0); display: inline-block;">&nbsp;</span></a><a class='btn color' title="gold" data-colors="244, 231, 51" href="#color"><span style="background-color: rgb(244, 231, 51); display: inline-block;">&nbsp;</span></a><a class='btn color' title="blue" data-colors="0, 0, 200" href="#color"><span style="background-color: rgb(0, 0, 200); display: inline-block;">&nbsp;</span></a>
+      </li>
+      <li class='border_colors colors settings'>
+        <a class='btn color' title="orange" data-colors="255,165,0" href="#color"><span style="background-color: rgb(255,165,0); display: inline-block;">&nbsp;</span></a><a class='btn color' title="green" data-colors="0, 155, 0" href="#color"><span style="background-color: rgb(0, 155, 0); display: inline-block;">&nbsp;</span></a><a class='btn color' title="purple" data-colors="128,0,128" href="#color"><span style="background-color: rgb(128,0,128); display: inline-block;">&nbsp;</span></a>
+      </li>
+    </ul>
+  </div>
+  <div id="pane" style="vertical-align: top; float: left;">
+    <img src="" id="pic"/>
+    <canvas width="500" height="500" style="display: none; width: 200px; height: 200px;" id="canvas"></canvas>
+  </div>
+  <div style="clear: left;"></div>
+</div>
+<div id="cropper""></div>
+<% add_script 'word_maker.js' %>

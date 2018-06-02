@@ -1,0 +1,113 @@
+<style>
+a.selected {
+  font-weight: bold;
+}
+#cropper {
+  position: absolute; 
+  display: none;
+  border: 2px dashed #000; 
+  background-color: rgba(265,265,265,0.2);
+}
+#pic {
+  width: 265px; 
+  height: 265px; 
+  border: 1px solid #888; 
+  vertical-align: top;
+}
+#canvas {
+  width: 150px;
+  height: 150px;
+}
+ul {
+  list-style-type: none;
+  margin-left: 0;
+}
+footer {
+  display: none;
+}
+ul li.colors .btn {
+  padding: 4px 5px;
+}
+ul li.colors .btn span {
+  width: 34px;
+  height: 21px;
+  border: 1px solid #888;
+}
+#results {
+  width: 144px;
+  max-height: 190px;
+  overflow: hidden;
+}
+#results a.image {
+  float: left;
+}
+#results a.image img {
+  width: 48px;
+}
+body {
+/* background: linear-gradient(#fff, #8ccdff); */
+}
+</style>
+<div style="margin-top: 10px; ">
+  <div style="float: left; margin-right: 10px;">
+    <ul>
+      <li>
+        <input type='text' id='search' style='width: 100px; height: 30px;' placeholder="image search">
+        <a class='btn' href='#search' style='vertical-align: top; width: 18px;'><img src='/find.png' style='width: 20px;'/></a>
+      </li>
+      <li class='settings' style="margin-top: -5px;">
+        <a class='btn' href="#zoomin">+</a><a class='btn' href="#zoomout">-</a>
+        <span style='display: inline-block; margin-left: 26px; position: relative;'>
+          <a class='btn' style='width: 36px; height: 18px;'>upload</a>
+          <input type='file' id='file' style='position: absolute; top: 0; left: 0; display: block; width: 58px; height: 28px; overflow: hidden; opacity: 0.0;' accept="image/*"/>
+        </span>
+      </li>
+      <li class='settings' style='padding-top: 17px;'>
+        <a class='btn' href="#previous_shape">&lt;</a>
+        <span id='shape' style='display: inline-block; width: 76px; line-height: 25px; height: 25px; border: 1px solid #ccc; overflow: hidden; vertical-align: middle; text-align: center;'>
+          circle
+        </span>
+        <a class='btn' href="#next_shape">&gt;</a>
+      </li>
+      <li class='settings'>
+        <a class='btn' href="#border" style='width: 50px;'>Border</a><a class='btn' href="#fill" style='width: 50px;'>Fill</a>
+      </li>
+      <li class='border_colors colors settings'>
+        <a class='btn color' title="bronze" data-colors="235, 155, 89" href="#color"><span style="background-color: rgb(235, 155, 89); display: inline-block;">&nbsp;</span></a><a class='btn color' title="silver" data-colors="200, 200, 200" href="#color"><span style="background-color: rgb(200, 200, 200); display: inline-block;">&nbsp;</span></a><a class='btn color' title="gold" data-colors="244, 231, 51" href="#color"><span style="background-color: rgb(244, 231, 51); display: inline-block;">&nbsp;</span></a>
+      </li>
+      <li class='border_colors colors settings'>
+        <a class='btn color' title="red" data-colors="200, 0, 0" href="#color"><span style="background-color: rgb(200, 0, 0); display: inline-block;">&nbsp;</span></a><a class='btn color' title="yellow" data-colors="255, 255, 0" href="#color"><span style="background-color: rgb(255, 255, 0); display: inline-block;">&nbsp;</span></a><a class='btn color' title="blue" data-colors="0, 0, 200" href="#color"><span style="background-color: rgb(0, 0, 200); display: inline-block;">&nbsp;</span></a>
+      </li>
+      <li class='border_colors colors settings'>
+        <a class='btn color' title="orange" data-colors="255,165,0" href="#color"><span style="background-color: rgb(255,165,0); display: inline-block;">&nbsp;</span></a><a class='btn color' title="green" data-colors="0, 255, 0" href="#color"><span style="background-color: rgb(0, 255, 0); display: inline-block;">&nbsp;</span></a><a class='btn color' title="purple" data-colors="128,0,128" href="#color"><span style="background-color: rgb(128,0,128); display: inline-block;">&nbsp;</span></a>
+      </li>
+      <li class='border_colors colors settings'>
+        <a class='btn color' title="black" data-colors="0, 0, 0" href="#reset"><span style="background-color: #000; display: inline-block;">&nbsp;</span></a><a class='btn color' title="white" data-colors="255, 255, 255" href="#color"><span style="background-color: rgb(255, 255, 255); display: inline-block;">&nbsp;</span></a><a class='btn color' title="light grey" data-colors="230, 230, 230" href="#color"><span style="background-color: rgb(230, 230, 230); display: inline-block;">&nbsp;</span></a>
+      </li>
+      <li class='fill_colors colors settings'>
+        <a class='btn color' title="white" data-colors="0, 0, 0" href="#reset"><span style="background-color: rgb(255, 255, 255); display: inline-block;">&nbsp;</span></a><a class='btn color' title="faint gray" data-colors="245, 245, 245" href="#color"><span style="background-color: rgb(245, 245, 245); display: inline-block;">&nbsp;</span></a><a class='btn color' title="light grey" data-colors="230, 230, 230" href="#color"><span style="background-color: rgb(230, 230, 230); display: inline-block;">&nbsp;</span></a>
+      </li>
+      <li class='fill_colors colors settings'>
+        <a class='btn color' title="faint red" data-colors="255, 200, 200" href="#color"><span style="background-color: rgb(255, 200, 200); display: inline-block;">&nbsp;</span></a><a class='btn color' title="faint yellow" data-colors="255, 255, 200" href="#color"><span style="background-color: rgb(255, 255, 200); display: inline-block;">&nbsp;</span></a><a class='btn color' title="faint blue" data-colors="200, 200, 255" href="#color"><span style="background-color: rgb(200, 200, 255); display: inline-block;">&nbsp;</span></a>
+      </li>
+      <li class='fill_colors colors settings'>
+        <a class='btn color' title="faint orange" data-colors="255, 235, 200" href="#color"><span style="background-color: rgb(255, 235, 200); display: inline-block;">&nbsp;</span></a><a class='btn color' title="faint green" data-colors="200, 255, 200" href="#color"><span style="background-color: rgb(200, 255, 200); display: inline-block;">&nbsp;</span></a><a class='btn' title="faint purple" data-colors="235, 200, 235" href="#color"><span style="background-color: rgb(235, 200, 235); display: inline-block;">&nbsp;</span></a>
+      </li>
+      <li class='fill_colors colors settings'>
+        <a class='btn color' title="faint sky blue" data-colors="193, 232, 255" href="#color"><span style="background-color: rgb(193, 232, 255); display: inline-block;">&nbsp;</span></a><a class='btn color' title="faint pink" data-colors="255, 216, 233" href="#color"><span style="background-color: rgb(255, 216, 233); display: inline-block;">&nbsp;</span></a><a class='btn color' title="faint faded green" data-colors="218, 237, 219" href="#color"><span style="background-color: rgb(218, 237, 219); display: inline-block;">&nbsp;</span></a>
+      </li>
+      <li id="results" class="results" style='display: none;'>
+      </li>
+      <li class="results" style='display: none; padding-top: 10px;'>
+        <a class='btn' href='#clear_search'>Clear Search</a>
+      </li>
+    </ul>
+  </div>
+  <div id="pane" style="vertical-align: top; float: left;">
+    <img src="" id="pic"/>
+    <canvas width="500" height="500" style="display: none; width: 200px; height: 200px;" id="canvas"></canvas>
+  </div>
+  <div style="clear: left;"></div>
+</div>
+<div id="cropper""></div>
+<% add_script 'badge_maker.js' %>
