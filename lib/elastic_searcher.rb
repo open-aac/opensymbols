@@ -38,9 +38,7 @@ module ElasticSearcher
     query = {
       bool: {
         must: {
-          query: {
-            query_string: {query: q}
-          }
+          query_string: {query: q}
         },
         should: {
           multi_match: {
