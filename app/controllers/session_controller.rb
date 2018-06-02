@@ -26,7 +26,7 @@ class SessionController < ApplicationController
         if user['permissions'] && user['permissions']['admin_support_actions']
           token = ExternalSource.user_token(token['user_name'])
         end
-        render json: {token: token}
+        render json: {token: token, access: token['access_token']}
       else
         api_error 400, {error: "Code missing from response"}
       end
