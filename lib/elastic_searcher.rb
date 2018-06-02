@@ -8,6 +8,7 @@ module ElasticSearcher
       opts[:password] = ENV['ELASTIC_TOKEN']
     end
     @@client ||= Elasticsearch::Client.new(opts)
+    @@version ||= @@client.info['version']['number']
     @@client
   end
   
@@ -116,14 +117,15 @@ module ElasticSearcher
     opts[:index] = self.env_index(opts[:index])
     locale = opts.delete(:locale)
     analyzer = MAPPING_LOCALES[locale] || 'standard'
+    type = @@version.to_i < 3 ? 'string' : 'text'
     update = {
       symbol: {
         properties: {
           search_string: {
-            type: 'string',
+            type: type,
             fields: {
               stemmed: {
-                type: 'string',
+                type: type,
                 analyzer: analyzer
               }
             }
