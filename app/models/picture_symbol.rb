@@ -37,7 +37,7 @@ class PictureSymbol < ApplicationRecord
       name = localized['name'] || self.settings['name']
       description = localized['description'] || self.settings['description']
       localized['search_string'] = ("#{name} - #{description || ""}".downcase.sub(/^to\s/, '') + ", "  + uses.join(", ") + ", " + recommendations.join(" ")).strip
-      localized['search_string'] = localized['search_string'].gsub(/\./, '')
+      localized['search_string'] = localized['search_string'].gsub(/[\.\(\)\/]/, '')
       self.settings['locales'][locale] = localized
     end
   end
