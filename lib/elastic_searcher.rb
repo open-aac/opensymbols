@@ -134,7 +134,12 @@ module ElasticSearcher
       }
     }
     @mappers ||= {}
-    self.searcher.index(opts)
+    begin
+      self.searcher.index(opts)
+    rescue => e
+      puts JSON.pretty_generate(opts)
+      raise e
+    end
     if !@mappers[opts[:index]] || @mappers[opts[:index]] < 30.minutes.ago
       self.searcher.indices.put_mapping index: opts[:index], type: opts[:type], body: update
       @mappers[opts[:index]] = Time.now
