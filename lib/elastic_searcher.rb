@@ -2,7 +2,12 @@ require 'elasticsearch'
 
 module ElasticSearcher
   def self.searcher
-    @@client ||= Elasticsearch::Client.new host: (ENV['ELASTIC_SEARCH_URL'] || ENV['BONSAI_URL'] || ENV['FOUNDELASTICSEARCH_URL']), log: (ENV['RAILS_ENV'] == 'development')
+    opts = {host: (ENV['ELASTIC_SEARCH_URL'] || ENV['BONSAI_URL'] || ENV['FOUNDELASTICSEARCH_URL']), log: (ENV['RAILS_ENV'] == 'development')}
+    if ENV['ELASTIC_USER'] && ENV['ELASTIC_TOKEN']
+      opts[:user] = ENV['ELASTIC_USER']
+      opts[:password] = ENV['ELASTIC_TOKEN']
+    end
+    @@client ||= Elasticsearch::Client.new(opts)
     @@client
   end
   
