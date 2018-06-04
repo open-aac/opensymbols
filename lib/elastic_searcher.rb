@@ -18,7 +18,9 @@ module ElasticSearcher
   
   def self.index_symbol(symbol, locale='en')
     index = "open-symbols-#{locale}"
-    self.index index: index, type: 'symbol', id: symbol.id, locale: locale, body: symbol.obj_json(true, locale)
+    json = symbol.obj_json(true, locale)
+    json[:use_scores] = json[:use_scores].to_json if json[:use_scores]
+    self.index index: index, type: 'symbol', id: symbol.id, locale: locale, body: json
   end
   
   def self.remove_symbol(symbol, locale='en')
@@ -87,6 +89,7 @@ module ElasticSearcher
     factor = raw_list['hits']['hits'][0]['_score'] / 5
     raw_list['hits']['hits'].map{ |hit|
       res = hit['_source']
+      res['use_scores'] = JSON.parse(res['use_scores']) if res['use_scores'].is_a?(String)
       res['use_score'] = ((res['use_scores'] && res['use_scores'][q]) || 1.0)
       res['relevance'] = hit['_score'] * res['use_score']
       res['relevance'] *= 2 if (res['name'] || "").downcase == q.downcase
