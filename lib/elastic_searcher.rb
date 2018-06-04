@@ -86,7 +86,6 @@ module ElasticSearcher
     }
     repo_counts = {}
     
-    factor = raw_list['hits']['hits'][0]['_score'] / 5
     raw_list['hits']['hits'].map{ |hit|
       res = hit['_source']
       res['use_scores'] = JSON.parse(res['use_scores']) if res['use_scores'].is_a?(String)
