@@ -84,9 +84,11 @@ module ElasticSearcher
     }
     repo_counts = {}
     
+    factor = raw_list['hits']['hits'][0]['_score'] / 5
     raw_list['hits']['hits'].map{ |hit|
       res = hit['_source']
-      res['relevance'] = hit['_score'] * ((res['use_scores'] && res['use_scores'][q]) || 1.0)
+      res['use_score'] = ((res['use_scores'] && res['use_scores'][q]) || 1.0)
+      res['relevance'] = hit['_score'] * res['use_score']
       res['relevance'] *= 2 if (res['name'] || "").downcase == q.downcase
       res
     }.select{|hit|
