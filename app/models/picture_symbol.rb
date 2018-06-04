@@ -251,7 +251,7 @@ class PictureSymbol < ApplicationRecord
     }  
     if verbose
       res[:use_scores] = localized['use_scores'] || {}
-      res[:use_scores] = res[:use_scores].slice(res[:use_scores].keys.select{|k| k.length > 0 })
+      res[:use_scores] = res[:use_scores].slice(*res[:use_scores].keys.select{|k| k.strip.length > 0 })
     end  
     res
   end
