@@ -46,10 +46,10 @@ module ElasticSearcher
           multi_match: {
             type: 'best_fields',
             query: q,
-            fields: ['search_string', 'search_string.stemmed', 'repo_key', 'image_url']
+            fields: ['name^2', 'search_string', 'search_string.stemmed', 'repo_key', 'image_url']
           }
         },
-        filter: [{term: {enabled: true}}]
+        filter: [{term: {enabled: true}}, {term: {protected_symbol: false}}]
       }
     }
 
@@ -58,6 +58,10 @@ module ElasticSearcher
       repo_filter = repo_filter.split(/-/)[0]
       query[:bool][:filter] ||= []
       query[:bool][:filter] << {term: {repo_key: repo_filter}}
+    end
+    if !allow_protected
+      query[:bool][:filter] ||= []
+      query[:bool][:filter].select{|f| !f[:term].keys.include?(:protected_symbol) }
     end
 
     boost = {}

@@ -20,6 +20,7 @@ class SymbolRepository < ApplicationRecord
     repo.settings['active'] = true
     repo.settings['name'] = repo_attributes['name']
     repo.settings['url'] = repo_attributes['url']
+    repo.settings['protected'] = repo_attributes['protected']
     repo.settings['repository_type'] = 'local'
     repo.settings['default_attribution'] = repo_attributes['default_attribution']
     repo.save

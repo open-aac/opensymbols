@@ -136,7 +136,7 @@ class PictureSymbol < ApplicationRecord
     self.save
   end
 
-  def self.search(q, locale='en')
+  def self.search(q, locale='en', safe_search=true, allow_protected=false)
     q = q.to_s.downcase
     repo_filter = nil
     if q.match(/repo:[\w_-]+/)
@@ -144,10 +144,9 @@ class PictureSymbol < ApplicationRecord
       repo_filter = match && match[1]
       q = q.sub(/repo:([\w_-]+)/, '')
     end
-    allow_protected = false
     # TODO: https://gist.github.com/BrianTheCoder/217158
     if ElasticSearcher.enabled?
-      res = ElasticSearcher.search_symbols(q, locale, {repo_filter: repo_filter, safe_search: true, allow_protected: allow_protected})
+      res = ElasticSearcher.search_symbols(q, locale, {repo_filter: repo_filter, safe_search: safe_search, allow_protected: allow_protected})
   
       bucket = ENV['S3_BUCKET']
       cdn = ENV['S3_CDN']
@@ -183,6 +182,7 @@ class PictureSymbol < ApplicationRecord
     fn = data['filename']
     symbol_key = PictureSymbol.keyify(data['name'], fn)
     symbol = PictureSymbol.find_or_initialize_by(:repo_key => repo_key, :symbol_key => symbol_key)
+    locale = symbol['locale'] || 'en'
     return if symbol.id && skip_update
     symbol.settings ||= {}
     symbol.settings['image_url'] = "/libraries/#{repo.repo_key}/#{data['filename']}"
@@ -190,6 +190,7 @@ class PictureSymbol < ApplicationRecord
     symbol.settings['file_extension'] = data['extension']
     symbol.settings['license'] = data['attribution']['license']
     symbol.settings['license_url'] = data['attribution']['license_url']
+    symbol.settings['protected_symbol'] = true if data['protected'] || repo.settings['protected']
     symbol.settings['author'] = data['attribution']['author_name']
     symbol.settings['author_url'] = data['attribution']['author_url']
     symbol.settings['source_url'] = data['source_url']
