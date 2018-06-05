@@ -201,7 +201,7 @@ class PictureSymbol < ApplicationRecord
       'description' => data['description']
     }
     symbol.save
-    data['default_words'].each do |word|
+    (data['default_words'] || []).each do |word|
       symbol.set_as_default(word, locale)
     end
     puts symbol.obj_json.to_json
