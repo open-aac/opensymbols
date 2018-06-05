@@ -195,7 +195,15 @@ class PictureSymbol < ApplicationRecord
     symbol.settings['author_url'] = data['attribution']['author_url']
     symbol.settings['source_url'] = data['source_url']
     symbol.settings['description'] = data['description']
+    symbol.settings['locales'] ||= {}
+    symbol.settings['locales'][locale] ||= {
+      'name' => data['name'],
+      'description' => data['description']
+    }
     symbol.save
+    data['default_words'].each do |word|
+      symbol.set_as_default(word, locale)
+    end
     puts symbol.obj_json.to_json
     symbol
   end

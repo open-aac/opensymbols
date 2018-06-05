@@ -23,7 +23,7 @@ class Api::LegacyController < ApplicationController
     cross_origin
     # if filtering by a specific repo and protected is allowed, set it to true
     allow_protected = false
-    results = PictureSymbol.search(params['q'], params['locale'], params['safe'] != '0', allow_protected)
+    results = PictureSymbol.search(params['q'], params['locale'] || 'en', params['safe'] != '0', allow_protected)
     render json: results.to_json
   end
 
