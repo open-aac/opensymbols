@@ -14,9 +14,10 @@ class SymbolRepository < ApplicationRecord
     self.settings['n_symbols'] = PictureSymbol.where(repo_key: self.repo_key).count if self.repo_key
   end
 
-  def self.retreive_from_manifest(key, skip_update=false)
+  def self.retrieve_from_manifest(key, skip_update=false)
     repo_attributes, symbols = S3Bucket.retrieve_from_manifest(key)
     repo = SymbolRepository.find_or_initialize_by(:repo_key => key)
+    repo.settings ||= {}
     repo.settings['active'] = true
     repo.settings['name'] = repo_attributes['name']
     repo.settings['url'] = repo_attributes['url']

@@ -177,7 +177,7 @@ class PictureSymbol < ApplicationRecord
     end
   end
 
-  def generate_for_repo(repo, data, skip_update=false)
+  def self.generate_for_repo(repo, data, skip_update=false)
     repo_key = repo.repo_key
     fn = data['filename']
     symbol_key = PictureSymbol.keyify(data['name'], fn)
