@@ -187,6 +187,7 @@ class PictureSymbol < ApplicationRecord
     symbol.settings ||= {}
     symbol.settings['image_url'] = "/libraries/#{repo.repo_key}/#{data['filename']}"
     symbol.settings['name'] = data['name']
+    symbol.settings['enabled'] = true unless data['enabled'] == false
     symbol.settings['file_extension'] = data['extension']
     symbol.settings['license'] = data['attribution']['license']
     symbol.settings['license_url'] = data['attribution']['license_url']
