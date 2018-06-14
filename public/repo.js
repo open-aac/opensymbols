@@ -86,14 +86,77 @@
       $("#search").click();  
     }
   });
+  var search = function(term) {
+    var search_success = function() { };
+    var search_error = function() { };
+    var done = false;
+    var prom = {
+      then: function(success, error) {
+        if(done) {
+          if(done == 'error') {
+            error()
+          } else {
+            success(done);
+          }
+        } else {
+          if(success) { search_success = success; }
+          if(error) { search_error = error; }
+        }
+      }
+    };
+    session.getJSON("/api/v1/symbols/search?q=" + term, function(data) {
+      done = data;
+      search_success(data);
+    }).fail(function() {
+      search_error();
+    });
+    return prom;
+  };
+  $("#base_search_text").keydown(function(event) {
+    if(event.keyCode == 13) {
+      $("#base_search").click();
+    }
+  })
+  $("#base_search").click(function(event) {
+    event.preventDefault();
+    var term = $("#base_search_text").val();
+    if(term && term.length > 0) {
+      term = term + " repo:" + repo_key;
+      $("#symbols").empty().text("Loading results...");
+      search(term).then(function(data) {
+        $("#symbols").empty()
+        for(var idx in data) {
+          var symbol = data[idx];
+          var template = Handlebars.templates['symbol_result'](symbol);
+          $("#symbols").append(template);
+        }
+        if(data.length == 0) {
+          $("#symbols").text("No results found");
+        }
+      }, function(err) {
+        $("#symbols").text("Error retrieving results");
+      })
+    }
+  });
+  $("#clear_base_search").click(function(event) {
+    event.preventDefault();
+    $("#symbols").empty();
+    load_symbols.next_url = null;
+    load_symbols();
+  });
   var results = [];
+  $("#search_term").keydown(function(event) {
+    if(event.keyCode == 13) {
+      $("#search").click();
+    }
+  })
   $("#search").click(function(event) {
     event.preventDefault();
     var term = $("#search_term").val();
     if(term) {
       term = term + " repo:" + repo_key;
       $("#search_results").empty();
-      session.getJSON("/api/v1/symbols/search?q=" + term, function(data) {
+      search(term).then(function(data) {
         results = data;
         for(var idx in data) {
           var symbol = data[idx];
@@ -103,9 +166,9 @@
           var template = Handlebars.templates['symbol_result'](symbol);
           $("#search_results").append(template);
         }
-      }).fail(function() {
-        alert('search failed!');
-      });
+      }, function(err) {
+        $("#search_results").text("Error retrieving results");
+      })
     }
   });
 

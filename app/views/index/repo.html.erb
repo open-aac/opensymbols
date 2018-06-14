@@ -76,9 +76,15 @@
           <dd><a href="<%= @repo.settings['default_attribution']['author_url'] || @repo.settings['url'] %>"><%= @repo.settings['default_attribution']['author_name'] || 'unknown' %></a></dd>
       <% end %>
       <dt>Symbols Shared:</dt>
-        <dd><%= commas(@repo.settings['n_symbols']) %></dd>
+        <dd><%= commas(@repo.settings['n_protected_symbols'] || @repo.settings['n_symbols']) %></dd>
       <dt>Description:</dt>
-        <dd><%= @repo.settings['description'] %></dd>
+        <dd><%= @repo.settings['description'] %>&nbsp;</dd>
+      <dt>Search:</dt>
+        <dd>
+          <input type='text' placeholder='search' id='base_search_text' style='margin-bottom: 0; width: 200px;'/>
+          <a href='#' class='btn' id='base_search'>Go</a>
+          <a href='#' class='btn' id='clear_base_search'>Clear</a>
+        </dd>
     </dl>
     <div class='authenticated'>
       <a class='btn' href='#' id='set_defaults'>Set Default Core Symbols</a>

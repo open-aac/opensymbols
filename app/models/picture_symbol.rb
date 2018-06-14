@@ -185,7 +185,7 @@ class PictureSymbol < ApplicationRecord
     locale = symbol['locale'] || 'en'
     return if symbol.id && skip_update
     symbol.settings ||= {}
-    symbol.settings['image_url'] = "/libraries/#{repo.repo_key}/#{data['filename']}"
+    symbol.settings['image_url'] = data['path'] ? "/#{data['path']}" : "/libraries/#{repo.repo_key}/#{data['filename']}"
     symbol.settings['name'] = data['name']
     symbol.settings['enabled'] = true unless data['enabled'] == false
     symbol.settings['file_extension'] = data['extension']
@@ -289,7 +289,7 @@ class PictureSymbol < ApplicationRecord
       end
       symbol.settings ||= {}
       symbol.settings['enabled'] = record['enabled'] == nil ? true : !!record['enabled']
-      symbol.settings['protected'] = record['protected'] == nil ? true : !!record['protected']
+      symbol.settings['protected_symbol'] = record['protected'] == nil ? true : !!record['protected']
       symbol.settings['unsafe_result'] = !!(record['settings'] && record['settings']['unsafe_result'])
 
       ['image_url', 'license', 'license_url', 'author', 'author_url', 'source_url', 'name', 'file_extension', 'description', 'search_string'].each do |key|

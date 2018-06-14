@@ -6,6 +6,7 @@ class Api::LegacyController < ApplicationController
   def repo_symbols
     cross_origin
     repo = SymbolRepository.find_by(:repo_key => params['repo_key'])
+    repo = nil if repo && repo.settings['protected'] && !@authenticated
     page = params['page'].to_i
     per_page = 60
     symbols = PictureSymbol.where(repo_key: repo.repo_key)[page * per_page, per_page]
@@ -22,7 +23,7 @@ class Api::LegacyController < ApplicationController
   def search
     cross_origin
     # if filtering by a specific repo and protected is allowed, set it to true
-    allow_protected = false
+    allow_protected = !!@authenticated
     results = PictureSymbol.search(params['q'], params['locale'] || 'en', params['safe'] != '0', allow_protected)
     render json: results.to_json
   end
@@ -40,7 +41,7 @@ class Api::LegacyController < ApplicationController
 
   def random_symbols
     cross_origin
-    list = PictureSymbol.all.offset(rand([2, PictureSymbol.max_count - 20].max)).order('random').limit(20).select{|s| s.settings['enabled'] != false && s.safe_result? }
+    list = PictureSymbol.all.offset(rand([2, PictureSymbol.max_count - 20].max)).order('random').limit(30).select{|s| s.settings['enabled'] != false && !s.settings['protected_symbol'] && s.safe_result? }
     render json: list[0, 9].map(&:obj_json)
   end
 

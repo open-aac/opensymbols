@@ -20,6 +20,7 @@ module ElasticSearcher
     index = "open-symbols-#{locale}"
     json = symbol.obj_json(true, locale)
     json[:use_scores] = json[:use_scores].to_json if json[:use_scores]
+    json['use_scores'] = json['use_scores'].to_json if json['use_scores']
     self.index index: index, type: 'symbol', id: symbol.id, locale: locale, body: json
   end
   
@@ -59,9 +60,9 @@ module ElasticSearcher
       query[:bool][:filter] ||= []
       query[:bool][:filter] << {term: {repo_key: repo_filter}}
     end
-    if !allow_protected
+    if allow_protected
       query[:bool][:filter] ||= []
-      query[:bool][:filter].select{|f| !f[:term].keys.include?(:protected_symbol) }
+      query[:bool][:filter].select!{|f| !f[:term].keys.include?(:protected_symbol) }
     end
 
     boost = {}
@@ -166,7 +167,7 @@ end
   end
   
   def self.delete_index(opts)
-    raise "no" unless ENV['RAILS_ENV'] == 'test'
+    #raise "no" unless ENV['RAILS_ENV'] == 'test'
     opts[:index] = self.env_index(opts[:index])
     self.searcher.indices.delete(opts) rescue nil
   end

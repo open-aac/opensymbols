@@ -12,6 +12,8 @@ class SymbolRepository < ApplicationRecord
     self.settings['protected'] ||= false
     self.settings['name'] ||= 'Unnamed Repository'
     self.settings['n_symbols'] = PictureSymbol.where(repo_key: self.repo_key).count if self.repo_key
+    self.settings['n_protected_symbols'] = self.settings['n_symbols'] if self.settings['protected']
+    self.settings['n_symbols'] = 0 if self.settings['protected']
   end
 
   def self.retrieve_from_manifest(key, skip_update=false)
@@ -30,6 +32,7 @@ class SymbolRepository < ApplicationRecord
       puts idx if idx % 100 == 0 && skip_update
       PictureSymbol.generate_for_repo(repo, symbol, skip_update)
     end
+    repo.reload
     repo.settings['n_symbols'] = PictureSymbol.where(repo_key: repo.repo_key).count
     repo.save
     repo.settings['n_symbols']

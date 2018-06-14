@@ -12,6 +12,15 @@ class ApplicationController < ActionController::Base
     true
   end
 
+  def check_cookie
+    if cookies[:auth]
+      check = ExternalSource.confirm_user_token(cookies[:auth])
+      if check && check[:valid]
+        @authenticated = true
+      end
+    end
+  end
+
   def require_authorization
     if !@authenticated
       render json: {error: 'not authorized'}, status: 400

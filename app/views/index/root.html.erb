@@ -74,28 +74,37 @@
     </form>
     <div id="message">
       <p>
-      This is a collection of <a href="http://creativecommons.org/">open-licensed</a>
-      picture symbols that can be used for augmentative communication. 
-      The collection pulls from multiple sources and currently includes 
-      access to more than 
-      <%= (SymbolRepository.all.map{|r| r.settings['n_symbols'] || 0 }.sum || 0) / 1000 %>,000 
-      symbols and icons!
+        This is a collection of <a href="http://creativecommons.org/">open-licensed</a>
+        picture symbols that can be used for augmentative communication. 
+        The collection pulls from multiple sources and currently includes 
+        access to more than 
+        <%= (SymbolRepository.all.map{|r| r.settings['n_symbols'] || 0 }.sum || 0) / 1000 %>,000 
+        symbols and icons!
       </p>
       <p>
-      Use the search box to search for communication symbols from:
+        Use the search box to search for communication symbols from:
       </p>
       <ul class="nav nav-tabs nav-stacked" style="width: 300px;">
-        <% SymbolRepository.all.sort_by{|r| r.settings['name'] }.each do |repo| %>
+        <% SymbolRepository.all.select{|r| !r.settings['protected'] }.sort_by{|r| r.settings['name'] }.each do |repo| %>
           <li><a href="/repositories/<%= repo.repo_key %>"><%= repo.settings['name'] %></a></li>
         <% end %>
         <li><a href="/word_art">Make Your Own Basic Word Art</a></li>
       </ul>
-      <p>This is definitely beta at the moment.
+      <p>
+      <% @private_repos = SymbolRepository.all.select{|r| r.settings['protected'] }.sort_by{|r| r.settings['name'] } %>
+      <% if @private_repos.length > 0 %>
+          <p><strong>Private Repositories</strong></p>
+          <ul class="nav nav-tabs nav-stacked" style="width: 300px;">
+          <% @private_repos.each do |repo| %>
+            <li><a href="/repositories/<%= repo.repo_key %>"><%= repo.settings['name'] %></a></li>
+          <% end %>
+        </ul>
+        <% end %>
       The reason I'm putting this up is because there's no standard way
       for people to easily look up all the possible open-licensed symbols.
       I needed one, and I thought others might benefit from one as well.
       <a href="/api/v1/symbols/search?q=mask">Here's my API</a>, more to come
-      (including docs!) soon.
+      (including docs!) eventually.
     </div>
     <div id="results" class="results">
     </div>

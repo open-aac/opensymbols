@@ -1,41 +1,44 @@
+require 's3'
+
 module S3Bucket
   def self.retrieve_from_manifest(key)
-    json = Typhoeus.get("https://s3.amazonaws.com/#{ENV['S3_BUCKET']}/libraries/#{key}/manifest.json").body
-    manifest = JSON.parse(json) rescue nil
+    service = S3::Service.new(:access_key_id => ENV['AWS_KEY'], :secret_access_key => ENV['AWS_SECRET'])
+    bucket = service.bucket('opensymbols')
+    file = bucket.objects.find_all(prefix: "libraries/#{key}/manifest.json")[0]
+    manifest = nil
+    if file
+      url = file.temporary_url
+      puts "downloading #{url}..."
+      json = Typhoeus.get(url).body
+      manifest = JSON.parse(json) rescue nil
+    end
     raise "manifest.json required but not found or invalid JSON" unless manifest
     symbols = []
-    xml = Typhoeus.get("https://s3.amazonaws.com/#{ENV['S3_BUCKET']}/?prefix=libraries/#{key}").body
-    doc = Nokogiri(xml)
+    objects = bucket.objects.find_all(prefix: "libraries/#{key}", max_keys: 1000)
     images_hash = {}
     (manifest['images'] || []).each do |i|
       images_hash[i['filename']] = i
     end
-    while doc
-      doc.css("Contents").each do |item|
-        res = parse_symbol(item, manifest, images_hash)
+    while objects && objects.length > 0
+      objects.each do |obj|
+        res = parse_symbol(obj, manifest, images_hash)
         symbols << res if res
       end
-      if doc.css("IsTruncated")[0].content == "true"
-        puts "more to read.. (#{symbols.length})"
-        url = "https://s3.amazonaws.com/#{ENV['S3_BUCKET']}/?prefix=libraries/#{key}&marker=#{CGI.escape(symbols[-1]['path'])}"
-        xml = Typhoeus.get(url).body
-        doc = Nokogiri(xml)
-      else
-        doc = nil
-      end
+      puts "more to read.. (#{symbols.length})"
+      objects = bucket.objects.find_all(prefix: "libraries/#{key}", max_keys: 1000, marker: objects[-1].key)
     end
     [manifest['library'], symbols.compact]
   end
   
-  def self.parse_symbol(nokogiri_elem, manifest, images_hash)
-    path = nokogiri_elem.css("Key")[0].content
+  def self.parse_symbol(s3_object, manifest, images_hash)
+    path = s3_object.key
     filename = path.split(/\//)[-1]
     name, ext = filename.split(/\./, 2)
-    size = nokogiri_elem.css("Size")[0].content.to_i
+    size = s3_object.size.to_i
     return nil if name == "manifest.json" || !['png', 'svg', 'jpg', 'gif'].include?(ext)
     symbol = images_hash[filename]
     symbol ||= (manifest['images'] || []).detect{|i| i['filename'] == filename } || {}
-    symbol['modified'] = nokogiri_elem.css("LastModified")[0].content
+    symbol['modified'] = s3_object.last_modified.iso8601
     symbol['path'] = path
     symbol['name'] ||= name.gsub(/_+/, " ")
     symbol['size'] ||= size
