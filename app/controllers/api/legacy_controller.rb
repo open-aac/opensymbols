@@ -7,6 +7,7 @@ class Api::LegacyController < ApplicationController
     cross_origin
     repo = SymbolRepository.find_by(:repo_key => params['repo_key'])
     repo = nil if repo && repo.settings['protected'] && !@authenticated
+    return api_error(400, {error: 'not found'}) unless repo
     page = params['page'].to_i
     per_page = 60
     symbols = PictureSymbol.where(repo_key: repo.repo_key)[page * per_page, per_page]
@@ -23,7 +24,7 @@ class Api::LegacyController < ApplicationController
   def search
     cross_origin
     allow_protected = !!@authenticated
-    protected_repos = @authenticated ? ['*'] : []
+    protected_repos = (@authenticated && params['q'].match(/repo/)) ? ['*'] : []
     if params['search_token']
       token, repos = params['search_token'].split(/:/)
       source = ExternalSource.find_by(token: token)

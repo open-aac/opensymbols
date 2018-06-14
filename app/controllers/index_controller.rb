@@ -18,7 +18,7 @@ class IndexController < ApplicationController
   def repo
     @repo = SymbolRepository.find_by(repo_key: params['repo_key'])
     @repo = nil if @repo && @repo.settings['protected'] && !@authenticated
-    api_error(400, 'Invalid repository') unless @repo
+    return api_error(400, 'Invalid repository') unless @repo
   end
 
   def symbol
@@ -29,7 +29,7 @@ class IndexController < ApplicationController
     @symbol ||= PictureSymbol.find_by(:repo_key => @repo.repo_key, :symbol_key => params['symbol_key'])
     @symbol = nil if @symbol && @symbol.settings['enabled'] == false
     @symbol = @symbol.obj_json if @symbol
-    api_error(400, "Invalid symbol") unless @symbol
+    return api_error(400, "Invalid symbol") unless @symbol
   end
 
   def stats

@@ -13,7 +13,7 @@ var session;
             if(data.refresh_token) {
               localStorage.auth_token = data.refresh_token;
             }
-            document.cookie = "auth=" + localStorage.auth_token;
+            document.cookie = "auth=" + localStorage.auth_token + ";path=/";
             session.ready = true;
             session.pends.forEach(function(p) { $.ajax(p); });
           } else {
@@ -27,12 +27,12 @@ var session;
     },
     authorize: function(token) {
       localStorage.auth_token = token;
-      document.cookie = "auth=" + localStorage.auth_token;
+      document.cookie = "auth=" + localStorage.auth_token + ";path=/";
       location.href = '/';
     },
     invalidate: function() {
       localStorage.removeItem('auth_token');
-      document.cookie = "auth=";
+      document.cookie = "auth=" + ";path=/";
       location.href = "/";
     },
     getJSON: function(url, callback) {
