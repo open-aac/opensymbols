@@ -136,7 +136,7 @@ class PictureSymbol < ApplicationRecord
     self.save
   end
 
-  def self.search(q, locale='en', safe_search=true, allow_protected=false)
+  def self.search(q, locale='en', safe_search=true, allow_protected=false, protected_repos=nil)
     q = q.to_s.downcase
     repo_filter = nil
     if q.match(/repo:[\w_-]+/)
@@ -146,7 +146,12 @@ class PictureSymbol < ApplicationRecord
     end
     # TODO: https://gist.github.com/BrianTheCoder/217158
     if ElasticSearcher.enabled?
-      res = ElasticSearcher.search_symbols(q, locale, {repo_filter: repo_filter, safe_search: safe_search, allow_protected: allow_protected})
+      res = ElasticSearcher.search_symbols(q, locale, {
+          repo_filter: repo_filter, 
+          safe_search: safe_search, 
+          allow_protected: allow_protected,
+          protected_repos: protected_repos || []
+      })
   
       bucket = ENV['S3_BUCKET']
       cdn = ENV['S3_CDN']

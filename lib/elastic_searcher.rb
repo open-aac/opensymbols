@@ -90,6 +90,8 @@ module ElasticSearcher
 #       }
     }
     repo_counts = {}
+    protected_repos = opts[:protected_repos] || []
+    allow_search_all = allow_protected && protected_repos == ['*']
     
     raw_list['hits']['hits'].map{ |hit|
       res = hit['_source']
@@ -101,7 +103,7 @@ module ElasticSearcher
     }.select{|hit|
       !safe_search || !hit['unsafe_result']
     }.select{|hit|
-      allow_protected || !hit['protected_symbol']
+      allow_search_all || !hit['protected_symbol']|| (allow_protected && protected_repos.include?(hit['repo_key']))
     }.sort_by{|hit| hit['relevance'] }.reverse.map{ |res|
       repo_counts[res['repo_key']] ||= 0
       repo_counts[res['repo_key']] += 1

@@ -22,15 +22,22 @@ class Api::LegacyController < ApplicationController
 
   def search
     cross_origin
-    # if filtering by a specific repo and protected is allowed, set it to true
     allow_protected = !!@authenticated
-    results = PictureSymbol.search(params['q'], params['locale'] || 'en', params['safe'] != '0', allow_protected)
+    protected_repos = @authenticated ? ['*'] : []
+    if params['search_token']
+      token, repos = params['search_token'].split(/:/)
+      source = ExternalSource.find_by(token: token)
+      return api_error(400, {error: 'invalid search token'}) unless source
+      allow_protected = true
+      protected_repos = repos.split(/,/)
+    end
+    results = PictureSymbol.search(params['q'], params['locale'] || 'en', params['safe'] != '0', allow_protected, protected_repos)
     render json: results.to_json
   end
 
   def track_use
     @token = ExternalSource.find_by(:token => params['access_token'])
-    api_errir(400, {:error => "token required"}) unless @token
+    return api_error(400, {:error => "token required"}) unless @token
     symbol = PictureSymbol.find_by(:id => params['id'])
     return unless exists?(symbol, params['id'])
     user_id = @token.user_id(params['user_id'])
