@@ -92,7 +92,7 @@
       </ul>
       <p>
       <% @private_repos = SymbolRepository.all.select{|r| r.settings['protected'] }.sort_by{|r| r.settings['name'] } %>
-      <% if @private_repos.length > 0 %>
+      <% if @authenticated && @private_repos.length > 0 %>
           <p><strong>Private Repositories</strong></p>
           <ul class="nav nav-tabs nav-stacked" style="width: 300px;">
           <% @private_repos.each do |repo| %>

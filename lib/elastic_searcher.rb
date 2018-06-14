@@ -93,7 +93,7 @@ module ElasticSearcher
     protected_repos = opts[:protected_repos] || []
     allow_search_all = allow_protected && protected_repos == ['*']
     
-    raw_list['hits']['hits'].map{ |hit|
+    res = raw_list['hits']['hits'].map{ |hit|
       res = hit['_source']
       res['use_scores'] = JSON.parse(res['use_scores']) if res['use_scores'].is_a?(String)
       res['use_score'] = ((res['use_scores'] && res['use_scores'][q]) || 1.0)
@@ -116,6 +116,10 @@ module ElasticSearcher
       # max of 5 results per repo
       [hit['repo_index'], hit['relevance']]
     }.reverse[0, 50]
+    if res[0] && res[0]['protected_symbol'] && res[0, 10].detect{|s| !s['protected_symbol'] }
+      res = ([res[0, 10].detect{|s| !s['protected_symbol'] }] + res).uniq
+    end
+    res
   end
 
   MAPPING_LOCALES = {
