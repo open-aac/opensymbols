@@ -72,9 +72,12 @@ class SymbolRepository < ApplicationRecord
     return @@core_lists if @@core_lists
     json = JSON.parse(File.read('./lib/core_lists.json')) rescue nil
     if json
+      json.each do |locale, list|
+        json[locale] = list.map{|i| i.downcase }
+      end
       @@core_lists = json
     end
-    @@core_lists ||= []
+    @@core_lists ||= {}
     @@core_lists
   end
 
