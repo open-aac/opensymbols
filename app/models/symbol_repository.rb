@@ -67,6 +67,20 @@ class SymbolRepository < ApplicationRecord
     res
   end
 
+  def default_core_words
+    lists = self.class.core_lists
+    res = {}
+    self.settings['defaults'] ||= {}
+    lists.each do |locale, list|
+      localized = self.settings['defaults'][locale] || {}
+      res[locale] = {}
+      list.each do |word|
+        res[locale][word] = localized[word] if localized[word]
+      end
+    end
+    res
+  end
+
   def self.core_lists
     @@core_lists ||= nil
     return @@core_lists if @@core_lists

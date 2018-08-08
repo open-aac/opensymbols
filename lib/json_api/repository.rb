@@ -14,7 +14,7 @@ end
   
   def self.extra_includes(repo, json, args={})
     if args['authenticated']
-      json['repository']['default_core_words'] = repo.settings['defaults'] || {}
+      json['repository']['default_core_words'] = repo.default_core_words
       json['repository']['missing_core_words'] = repo.missing_core_words
     end
     json
