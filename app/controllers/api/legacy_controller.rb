@@ -30,7 +30,7 @@ class Api::LegacyController < ApplicationController
       source = ExternalSource.find_by(token: token)
       return api_error(400, {error: 'invalid search token'}) unless source
       allow_protected = true
-      protected_repos = repos.split(/,/)
+      protected_repos = (repos || '').split(/,/)
     end
     results = PictureSymbol.search(params['q'], params['locale'] || 'en', params['safe'] != '0', allow_protected, protected_repos)
     render json: results.to_json
