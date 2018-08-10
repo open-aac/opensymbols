@@ -52,23 +52,21 @@
     event.preventDefault();
     var locale = $("#default_locale").val() || 'en';
     var total = 0;
-    if(repo && repo.missing_core_words) {
-      for(var key in repo.missing_core_words) {
-        if(!known_defaults[key]) {
+    if(repo && repo.missing_core_words && repo.missing_core_words[locale]) {
+      for(var key in repo.missing_core_words[locale]) {
+        if(!known_defaults[repo.missing_core_words[locale][key]]) {
           total++;
         }
       }
-    }
-    $("#total_missing").text(total);
-    if(repo && repo.missing_core_words && repo.missing_core_words[locale]) {
       var list = repo.missing_core_words[locale];
       var num = event.target.id == 'next_word' ? 1 : -1;
       word_idx = Math.min(Math.max(word_idx + num, 0), list.length - 1);
       var word = list[word_idx];
       if(word) {
-        $("#default_word").val(word);
+        $("#default_word").val(word || "???");
       }
     }
+    $("#total_missing").text(total);
     $("#select").click();
   });
   $("#select").click(function(event) {
