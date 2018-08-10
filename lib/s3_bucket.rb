@@ -25,7 +25,7 @@ module S3Bucket
         symbols << res if res
       end
       puts "more to read.. (#{symbols.length})"
-      objects = bucket.objects.find_all(prefix: "libraries/#{key}", max_keys: 1000, marker: objects[-1].key)
+      objects = bucket.objects.find_all(prefix: "libraries/#{key}", max_keys: 1000, marker: CGI.escape(objects[-1].key))
     end
     [manifest['library'], symbols.compact]
   end
