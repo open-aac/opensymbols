@@ -51,6 +51,15 @@
   $("#next_word,#previous_word").click(function(event) {
     event.preventDefault();
     var locale = $("#default_locale").val() || 'en';
+    var total = 0;
+    if(repo && repo.missing_core_words) {
+      for(var key in repo.missing_core_words) {
+        if(!known_defaults[key]) {
+          total++;
+        }
+      }
+    }
+    $("#total_missing").text(total);
     if(repo && repo.missing_core_words && repo.missing_core_words[locale]) {
       var list = repo.missing_core_words[locale];
       var num = event.target.id == 'next_word' ? 1 : -1;
