@@ -7,13 +7,21 @@ class IndexController < ApplicationController
     render 'root'
   end
 
-  def editor; end
+  def editor
+    cross_origin
+  end
 
-  def badge_maker; end
+  def badge_maker
+    cross_origin
+  end
   
-  def word_maker; end
+  def word_maker
+    cross_origin
+  end
 
-  def word_art; end
+  def word_art
+    cross_origin
+  end
 
   def repo
     @repo = SymbolRepository.find_by(repo_key: params['repo_key'])
