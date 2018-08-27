@@ -1,5 +1,5 @@
 class Api::RepositoriesController < ApplicationController
-  before_action :require_authorization
+  before_action :require_authorization, :except => [:defaults]
 
   def index
   end
@@ -8,6 +8,30 @@ class Api::RepositoriesController < ApplicationController
     repo = SymbolRepository.find_by(repo_key: params['id'])
     return unless exists?(repo, params['id'])
     render json: JsonApi::Repository.as_json(repo, wrapper: true, authenticated: @authenticated)
+  end
+
+  def defaults
+    repo = SymbolRepository.find_by(repo_key: params['repository_id'])
+    return unless exists?(repo, params['repository_id'])
+    if repo.settings['protected'] && !@authenticated
+      return unless valid_search_token?(params['search_token'])
+      return api_error(400, {error: 'unsupported repo'}) unless @allowed_repos.include?(repo.repo_key)
+    end
+    return api_error(400, {error: 'limited to 200 words at a time'}) if (params['words'] || []).length > 200
+    return api_error(400, {error: 'no words specified'}) unless (params['words'] || []).length > 0
+
+    core = repo.default_core_words
+    locale = params['locale']
+    lang = core[params['locale']] || core['en']
+    keys = {}
+    (params['words'] || []).each do |word|
+      keys[lang[word.downcase]] = word if lang[word.downcase]
+    end
+    res = {}
+    PictureSymbol.where(symbol_key: keys.map(&:first)).each do |symbol|
+      res[keys[symbol.symbol_key]] = symbol.obj_json(false, locale)
+    end
+    render json: res
   end
 
   def images

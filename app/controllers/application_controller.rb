@@ -21,6 +21,14 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def valid_search_token?(token)
+    return false unless token
+    token, repos = params['search_token'].split(/:/)
+    source = ExternalSource.find_by(token: token)
+    return api_error(400, {error: 'invalid search token'}) unless source
+    @allowed_repos = (repos || '').split(/,/)
+  end
+
   def require_authorization
     if !@authenticated
       render json: {error: 'not authorized'}, status: 400

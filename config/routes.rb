@@ -31,6 +31,7 @@ Rails.application.routes.draw do
   scope 'api/v2', :module => 'api' do
     resources :repositories do
       post 'images'
+      post 'defaults'
     end
     resources :symbols, :constraints => {:id => /[a-zA-Z0-9_-]+\/[a-zA-Z0-9_:%-]+/} do
       post 'safe'
