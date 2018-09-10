@@ -21,7 +21,7 @@ class Api::RepositoriesController < ApplicationController
     return api_error(400, {error: 'no words specified'}) unless (params['words'] || []).length > 0
 
     core = repo.default_core_words
-    locale = params['locale']
+    locale = params['locale'] || 'en'
     lang = core[params['locale']] || core['en']
     keys = {}
     (params['words'] || []).each do |word|
