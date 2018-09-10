@@ -188,7 +188,8 @@ class PictureSymbol < ApplicationRecord
     symbol_key = PictureSymbol.keyify(data['name'], fn)
     symbol = PictureSymbol.find_or_initialize_by(:repo_key => repo_key, :symbol_key => symbol_key)
     locale = symbol['locale'] || 'en'
-    return if symbol.id && skip_update
+    already_processed = !!symbol.id
+    return if already_processed && skip_update
     symbol.settings ||= {}
     symbol.settings['image_url'] = data['path'] ? "/#{data['path']}" : "/libraries/#{repo.repo_key}/#{data['filename']}"
     symbol.settings['name'] = data['name']
@@ -202,13 +203,14 @@ class PictureSymbol < ApplicationRecord
     symbol.settings['source_url'] = data['source_url']
     symbol.settings['description'] = data['description']
     symbol.settings['locales'] ||= {}
-    symbol.settings['locales'][locale] ||= {
-      'name' => data['name'],
-      'description' => data['description']
-    }
+    symbol.settings['locales'][locale] ||= {}
+    symbol.settings['locales'][locale]['name'] = data['name']
+    symbol.settings['locales'][locale]['description'] = data['description']
     symbol.save
-    (data['default_words'] || []).each do |word|
-      symbol.set_as_default(word, locale)
+    if !already_processed
+      (data['default_words'] || []).each do |word|
+        symbol.set_as_default(word, locale)
+      end
     end
     puts symbol.obj_json.to_json
     symbol
