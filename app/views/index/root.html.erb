@@ -163,8 +163,14 @@
     <div id="examples" class="results smaller"></div>
   </div>
 </div>
+<a href="https://www.openaac.org" id='openaac_link'><img src="https://www.openaac.org/openaac.svg" style="position: absolute;bottom: -65px;right: 50px;width: 100px;"></a>
 
 <% add_script "/index.js" %>
 <script>
 var S3Bucket = "<%= ENV['S3_BUCKET'] %>";
+var link = document.getElementById('openaac_link');
+var hero = document.getElementsByClassName('hero-unit');
+if(link && hero) {
+  hero.appendChild(link);
+}
 </script>
