@@ -54,15 +54,15 @@ GEM
       faraday
       multi_json
     erubis (2.7.0)
-    ethon (0.11.0)
+    ethon (0.12.0)
       ffi (>= 1.3.0)
     execjs (2.7.0)
     faraday (0.15.2)
       multipart-post (>= 1.2, < 3)
-    ffi (1.9.23)
+    ffi (1.10.0)
     globalid (0.4.1)
       activesupport (>= 4.2.0)
-    go_secure (0.65)
+    go_secure (0.67)
       oj
     i18n (1.0.1)
       concurrent-ruby (~> 1.0)
@@ -76,14 +76,14 @@ GEM
       mini_mime (>= 0.1.1)
     method_source (0.9.0)
     mini_mime (1.0.0)
-    mini_portile2 (2.3.0)
+    mini_portile2 (2.4.0)
     minitest (5.11.3)
     multi_json (1.13.1)
     multipart-post (2.0.0)
     nio4r (2.3.1)
-    nokogiri (1.8.2)
-      mini_portile2 (~> 2.3.0)
-    oj (3.6.0)
+    nokogiri (1.10.3)
+      mini_portile2 (~> 2.4.0)
+    oj (3.7.12)
     permissable-coughdrop (0.3.2)
     pg (1.0.0)
     proxies (0.2.1)
@@ -146,7 +146,7 @@ GEM
     thor (0.20.0)
     thread_safe (0.3.6)
     tilt (2.0.8)
-    typhoeus (1.3.0)
+    typhoeus (1.3.1)
       ethon (>= 0.9.0)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
@@ -188,4 +188,4 @@ RUBY VERSION
    ruby 2.3.3p222
 
 BUNDLED WITH
-   1.13.6
+   1.16.2
