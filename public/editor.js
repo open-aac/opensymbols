@@ -124,7 +124,25 @@
       }
     }
   });
-  $("#pic").bind('mousedown touchdown', function(event) {
+  var normalize = function(event) {
+    if(event.originalEvent && event.originalEvent.touches && event.originalEvent.touches[0]) {
+      event.pageX = event.originalEvent.touches[0].pageX;
+      event.pageY = event.originalEvent.touches[0].pageY;
+      event.clientX = event.originalEvent.touches[0].clientX;
+      event.clientY = event.originalEvent.touches[0].clientY;
+      event.total_touches = event.originalEvent.touches.length;
+    }
+    if(event.originalEvent && event.originalEvent.changedTouches && event.originalEvent.changedTouches[0]) {
+      event.pageX = event.originalEvent.changedTouches[0].pageX;
+      event.pageY = event.originalEvent.changedTouches[0].pageY;
+      event.clientX = event.originalEvent.changedTouches[0].clientX;
+      event.clientY = event.originalEvent.changedTouches[0].clientY;
+      event.total_touches = event.originalEvent.touches.length;
+    }
+    return event;
+  };
+  $("#pic").bind('mousedown touchstart', function(event) {
+    event = normalize(event);
     if(event.button != null && event.button != 0) { return; }
     event.preventDefault();
     if(state.mode == 'drag') {
@@ -144,6 +162,7 @@
     }
   });
   $(document).bind('mousemove touchmove', function(event) {
+    event = normalize(event);
     if(state.dragging) {
       var diffX = event.pageX - state.dragging.dragStartX;
       var diffY = event.pageY - state.dragging.dragStartY;
@@ -169,7 +188,8 @@
       state.cropping.dragEndY = event.pageY;
       boundingBox(state.cropping);
     }
-  }).bind('mouseup touchup', function(event) {
+  }).bind('mouseup touchend', function(event) {
+    event = normalize(event);
     stopDrag();
   }).bind('keydown', function(event) {
     if(event.keyCode == 27) {
