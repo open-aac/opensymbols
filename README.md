@@ -1,24 +1,36 @@
-# README
+OpenSymbols
+---------------------------
+OpenSymbols is a ruby (Rails) server that makes it easy to collect 
+and search
+through multiple image repositories. It's built around the idea of
+aggregating open-licensed picture symbols for AAC. It can search
+local and remote repositories.
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+You can see the site live at https://www.opensymbols.org
 
-Things you may want to cover:
+## Setup
 
-* Ruby version
+All local repositories need to be in the same S3 bucket and in a 
+subfolder `/libraries`. They will also need a `manifest.json` file
+that includes basic repository information. All the files in each
+repository including manifest.json should be publicly available.
 
-* System dependencies
+Once you have your repositories set up you can add them to your
+site by executing the following command from the console on your
+server or local computer:
 
-* Configuration
+```ruby
+SymbolRepository.retrieve_from_manifest('<repository_folder>')
+```
 
-* Database creation
+You'll need to set the environment variable, `S3_BUCKET=<yourbucketname>`
+before the app will run. You can use the dotenv gem to easily set this
+in development environments by editing the `.env` file (this option can work 
+in production too, but it's not set that way by default).
 
-* Database initialization
+You can check out a couple different `manifest.json` files in the
+`/examples` folder of the project.
 
-* How to run the test suite
+## License
 
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Licensed under the MIT License.
