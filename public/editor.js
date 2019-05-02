@@ -200,6 +200,7 @@
   function stopDrag(cancel) {
     if(state.cropping && state.cropping.box && !cancel) {
       cropTo(state.cropping.box);
+      state.mode = 'drag';
     }
     state.cropping = null;
     state.dragging = null;
