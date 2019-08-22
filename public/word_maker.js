@@ -154,6 +154,97 @@
     redraw();
   }
 
+  function fit_text(blank) {
+    var size = (state.zoom * 150);
+    var font = state.font || 'Arial';
+    if(font == 'Courier') { font = 'Courier New'; }
+    else if(font == 'Comic Sans') { font = 'Comic Sans MS'; }
+    else if(font == 'Times') { font = 'Times New Roman'; }
+    context.font = size + "px " + font;
+    context.fillStyle = '#000';
+    if(state.border) {
+      context.fillStyle = "rgb(" + state.border.red + "," + state.border.green + "," + state.border.blue + ")";
+    }
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+
+    var words = state.word.split(/\s/);
+    var lines = [];
+    var line = [];
+    var row = 0;
+    var max_width = 0;
+    for(var idx in words) {
+      var str = line.concat(words[idx]).join(' ').replace(/^\s+/, '').replace(/\s+$/, '');
+      var width = context.measureText(str).width;
+      if(width > canvas.width - 10) {
+        var prior = line.join(' ').replace(/^\s+/, '').replace(/\s+$/, '');
+        if(prior.match(/[^\s/]/)) {
+          max_width = Math.max(max_width, context.measureText(prior).width);
+          lines.push(prior);
+          row++;
+        }
+        line = [words[idx]];
+      } else {
+        line.push(words[idx]);
+      }
+    }
+    if(line.join(' ').match(/[^\s]/)) {
+      var str = line.join(' ').replace(/^\s+/, '').replace(/\s+$/, '')
+      max_width = Math.max(max_width, context.measureText(str).width);
+      lines.push(str);
+      row++;
+    }
+    row--;
+    var top = (canvas.height - (size * row)) / 2;
+
+    if(state.auto_zoom) {
+      if(top - (size / 2) < 10) {
+        return zoom('out');
+      } else if(max_width < (canvas.width * 2 / 3)) {
+        return zoom('in');
+      }
+    }
+    top = Math.max(top, size / 2);
+    for(var idx in lines) {
+      context.fillText(lines[idx], canvas.width / 2, top);
+      top += size;
+    }
+
+    // if(state.auto_zoom) {
+    //   var imageData = context.getImageData(0, 0, Math.round(canvas.width / 20), canvas.height);
+    //   var pixels = imageData.data;
+    //   var outer_all_blank = true;
+    //   for(var idx = 0; idx < pixels.length; idx = idx + 4) {
+    //     if(pixels[idx + 3] != 0) {
+    //       if(pixels[idx] != blank || pixels[idx + 1] != blank || pixels[idx + 2] != blank) { outer_all_blank = false; }
+    //     }
+    //   }
+    //   var imageData = context.getImageData(Math.round(canvas.width / 10), 0, Math.round(canvas.width / 20), canvas.height);
+    //   var pixels = imageData.data;
+    //   var inner_all_blank = true;
+    //   for(var idx = 0; idx < pixels.length; idx = idx + 4) {
+    //     if(pixels[idx + 3] != 0) {
+    //       if(pixels[idx] != blank || pixels[idx + 1] != blank || pixels[idx + 2] != blank) { inner_all_blank = false; }
+    //     }
+    //   }
+    //   if(!outer_all_blank) {
+    //     if(state.zoom > minZoom && zooming != 'in') {
+    //       zooming = 'out';
+    //       zoom('out');
+    //       zooming = null;
+    //       return;
+    //     }
+    //   } else if(inner_all_blank) {
+    //     if(state.zoom < maxZoom && zooming != 'out') {
+    //       zooming = 'in';
+    //       zoom('in');
+    //       zooming = null;
+    //       return;
+    //     }
+    //   }
+    // }
+  }
+
   var zooming = null;
   function redraw() {
     // console.log(state);
@@ -173,55 +264,8 @@
 
     context.fill();
     context.clip();
-    var size = (state.zoom * 150);
     document.getElementById('zoom').innerText = Math.round(state.zoom * 100 / 92 * 100) + "%";
-    var font = state.font || 'Arial';
-    if(font == 'Courier') { font = 'Courier New'; }
-    else if(font == 'Comic Sans') { font = 'Comic Sans MS'; }
-    else if(font == 'Times') { font = 'Times New Roman'; }
-    context.font = size + "px " + font;
-    context.fillStyle = '#000';
-    if(state.border) {
-      context.fillStyle = "rgb(" + state.border.red + "," + state.border.green + "," + state.border.blue + ")";
-    }
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText(state.word, canvas.width / 2, canvas.height / 2);
-//    context.drawImage(img, state.posX, state.posY, canvas.width * state.scaleX, canvas.height * state.scaleY);
-
-    if(state.auto_zoom) {
-      var imageData = context.getImageData(0, 0, Math.round(canvas.width / 20), canvas.height);
-      var pixels = imageData.data;
-      var outer_all_blank = true;
-      for(var idx = 0; idx < pixels.length; idx = idx + 4) {
-        if(pixels[idx + 3] != 0) {
-          if(pixels[idx] != blank || pixels[idx + 1] != blank || pixels[idx + 2] != blank) { outer_all_blank = false; }
-        }
-      }
-      var imageData = context.getImageData(Math.round(canvas.width / 10), 0, Math.round(canvas.width / 20), canvas.height);
-      var pixels = imageData.data;
-      var inner_all_blank = true;
-      for(var idx = 0; idx < pixels.length; idx = idx + 4) {
-        if(pixels[idx + 3] != 0) {
-          if(pixels[idx] != blank || pixels[idx + 1] != blank || pixels[idx + 2] != blank) { inner_all_blank = false; }
-        }
-      }
-      if(!outer_all_blank) {
-        if(state.zoom > minZoom && zooming != 'in') {
-          zooming = 'out';
-          zoom('out');
-          zooming = null;
-          return;
-        }
-      } else if(inner_all_blank) {
-        if(state.zoom < maxZoom && zooming != 'out') {
-          zooming = 'in';
-          zoom('in');
-          zooming = null;
-          return;
-        }
-      }
-    }
+    fit_text(blank);
 
     try {
       $("#pic").attr('src', canvas.toDataURL());
