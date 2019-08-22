@@ -198,9 +198,11 @@
     var top = (canvas.height - (size * row)) / 2;
 
     if(state.auto_zoom) {
-      if(top - (size / 2) < 10) {
+      if(top - (size / 2) < 10 && state.zoom > minZoom) {
         return zoom('out');
-      } else if(max_width < (canvas.width * 2 / 3)) {
+      } else if(max_width > canvas.width - 10 && state.zoom > minZoom) {
+        return zoom('out');
+      } else if(max_width < (canvas.width * 2 / 3) && state.zoom < maxZoom) {
         return zoom('in');
       }
     }
