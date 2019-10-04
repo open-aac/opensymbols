@@ -81,7 +81,7 @@ GEM
     multi_json (1.13.1)
     multipart-post (2.0.0)
     nio4r (2.3.1)
-    nokogiri (1.10.3)
+    nokogiri (1.10.4)
       mini_portile2 (~> 2.4.0)
     oj (3.7.12)
     permissable-coughdrop (0.3.2)
@@ -171,11 +171,11 @@ DEPENDENCIES
   elasticsearch
   go_secure
   listen (~> 3.0.5)
-  nokogiri
+  nokogiri (>= 1.10.4)
   permissable-coughdrop
   pg
   puma (~> 3.0)
-  rails (~> 5.0.4)
+  rails (~> 5.0.7)
   s3
   sass-rails (~> 5.0)
   spring
