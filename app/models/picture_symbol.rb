@@ -276,7 +276,7 @@ class PictureSymbol < ApplicationRecord
       :author_url => self.settings['author_url'],
       :source_url => self.settings['source_url'],
       :repo_key => self.repo_key,
-      :hc => !!self.settings['description'].match(/\bhc\b/),
+      :hc => !!(self.settings['description'] || '').match(/\bhc\b/),
       :protected_symbol => !!self.settings['protected_symbol'],
       :extension => self.settings['file_extension'],
       :image_url => self.full_image_url,
