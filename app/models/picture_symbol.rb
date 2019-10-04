@@ -96,6 +96,24 @@ class PictureSymbol < ApplicationRecord
     end
     res
   end
+  
+  def boost_emoji
+    res = false
+    if self.settings && self.settings['image_url'] && self.settings['image_url'].match(/twemoji/)
+      begin
+        str = self.settings['image_url'].split(/\//)[-1].split(/\./)[0]
+        self.settings['emoji'] = str
+        self.boost(str, 'en')
+        str = str.split(/-/).map{|s| s.hex }
+        code = str.pack("U*")
+        self.boost(code, 'en')
+        self.b
+        res = true
+      rescue
+      end
+    end
+    res
+  end
 
   def boost(keyword, locale, factor=nil)
     keyword = keyword.downcase

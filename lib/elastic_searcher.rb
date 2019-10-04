@@ -30,6 +30,12 @@ module ElasticSearcher
   end
   
   def self.search_symbols(q, locale='en', opts=nil)
+    if q.length < 10
+      match = q.match(Unicode::Emoji::REGEX)
+      if match && match[0] == q
+        q = q..each_codepoint.map {|n| n.to_s(16) }.join('-')
+      end
+    end
     opts ||= {}
     repo_filter = opts[:repo_filter]
     safe_search = opts[:safe_search]
