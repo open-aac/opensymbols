@@ -33,7 +33,7 @@ module ElasticSearcher
     if q.length < 10
       match = q.match(Unicode::Emoji::REGEX)
       if match && match[0] == q
-        q = q..each_codepoint.map {|n| n.to_s(16) }.join('-')
+        q = q.each_codepoint.map {|n| n.to_s(16) }.join('-')
       end
     end
     opts ||= {}
