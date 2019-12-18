@@ -39,47 +39,61 @@ module S3Bucket
     rasters = []
     errors = []
     images_hash = {}
+
+    rastered_keys = {}
+    to_rasterize = []
     objects = bucket.objects.find_all(prefix: "libraries/#{key}", max_keys: 1000)
     while objects && objects.length > 0
       objects.each do |obj|
-        symbol = parse_symbol(obj, {}, nil) rescue nil
-        if symbol && symbol['extension'] == 'svg'
+        if obj.key && obj.key.match(/\.raster\.png$/)
+          rastered_keys[obj.key.sub(/\.raster\.png$/, '')] = true
+          puts obj.key.sub(/\.raster\.png$/, '')
+        else
+          to_rasterize << obj
+        end
+      end
+      puts "more to read.. (#{to_rasterize.length})"
+      objects = bucket.objects.find_all(prefix: "libraries/#{key}", max_keys: 1000, marker: CGI.escape(objects[-1].key))
+    end
+    to_rasterize.each do |obj|
+      symbol = parse_symbol(obj, {}, nil) rescue nil
+      if symbol && symbol['extension'] == 'svg'
+        # check for existing (unless force)
+        url = "#{ENV['S3_CDN']}/#{symbol['path']}"
+        res = true if rastered_keys[symbol['path']]
+        res ||= Typhoeus.head(URI.escape("#{url}.raster.png"), followlocation: true)
+        if res == true
+          puts "already rasterized #{symbol['filename']}"
+        elsif !res.success? || force
           puts "rasterizing #{symbol['filename']}"
-          # check for existing (unless force)
-          url = "#{ENV['S3_CDN']}/#{symbol['path']}"
-          res = Typhoeus.head(URI.escape("#{url}.raster.png"), followlocation: true)
-          if !res.success? || force
-            # download the image
-            file = Tempfile.new(["stash", '.svg'])
-            file.binmode
-            res = Typhoeus.get(URI.escape(url), followlocation: true)
-            file.write(res.body)
-            file.close
-            # convert it locally
-            `convert -background none -density 300 -resize 400x400 -gravity center -extent 400x400 #{file.path} #{file.path}.raster.png`
-            # upload the rasterized version
+          # download the image
+          file = Tempfile.new(["stash", '.svg'])
+          file.binmode
+          res = Typhoeus.get(URI.escape(url), followlocation: true)
+          file.write(res.body)
+          # convert it locally
+          `convert -background none -density 300 -resize 400x400 -gravity center -extent 400x400 #{file.path} #{file.path}.raster.png`
+          # upload the rasterized version
+          file.close
 
-            params = remote_upload_params("#{symbol['path']}.raster.png", 'image/png')
-            post_params = params[:upload_params]
-            if File.exist?("#{file.path}.raster.png")
-              post_params[:file] = File.open("#{file.path}.raster.png", 'rb')
-          
-              # upload to s3 from tempfile
-              res = Typhoeus.post(params[:upload_url], body: post_params)
-              if res.success?
-                puts "  success!"
-                rasters << symbol
-              else
-                errors << symbol
-              end
+          params = remote_upload_params("#{symbol['path']}.raster.png", 'image/png')
+          post_params = params[:upload_params]
+          if File.exist?("#{file.path}.raster.png")
+            post_params[:file] = File.open("#{file.path}.raster.png", 'rb')
+        
+            # upload to s3 from tempfile
+            res = Typhoeus.post(params[:upload_url], body: post_params)
+            if res.success?
+              puts "  success!"
+              rasters << symbol
             else
               errors << symbol
             end
+          else
+            errors << symbol
           end
         end
       end
-      puts "more to read.. (#{rasters.length})"
-      objects = bucket.objects.find_all(prefix: "libraries/#{key}", max_keys: 1000, marker: CGI.escape(objects[-1].key))
     end
     {rasters: rasters, errors: errors}
   end
