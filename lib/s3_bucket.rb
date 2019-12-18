@@ -72,7 +72,13 @@ module S3Bucket
           res = Typhoeus.get(URI.escape(url), followlocation: true)
           file.write(res.body)
           # convert it locally
-          `convert -background none -density 300 -resize 400x400 -gravity center -extent 400x400 #{file.path} #{file.path}.raster.png`
+          begin
+            Timeout::timeout(5) do
+              `convert -background none -density 300 -resize 400x400 -gravity center -extent 400x400 #{file.path} #{file.path}.raster.png`
+            end
+          rescue Timeout::Error
+            puts "  rasterizing error, took too long"
+          end
           # upload the rasterized version
           file.close
 
