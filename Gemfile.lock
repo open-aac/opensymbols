@@ -81,7 +81,7 @@ GEM
     multi_json (1.13.1)
     multipart-post (2.0.0)
     nio4r (2.5.2)
-    nokogiri (1.10.4)
+    nokogiri (1.10.8)
       mini_portile2 (~> 2.4.0)
     oj (3.7.12)
     permissable-coughdrop (0.3.2)
