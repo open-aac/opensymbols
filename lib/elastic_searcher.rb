@@ -53,7 +53,7 @@ module ElasticSearcher
           multi_match: {
             type: 'best_fields',
             query: q,
-            fields: ['name^2', 'search_string', "search_string.stemmed-#{locale}", 'repo_key', 'image_url']
+            fields: ['name^2', 'search_string', 'search_string.stemmed', 'repo_key', 'image_url']
           }
         },
         filter: [{term: {enabled: true}}, {term: {protected_symbol: false}}]
@@ -171,7 +171,7 @@ module ElasticSearcher
           search_string: {
             type: type,
             fields: {
-              "stemmed-#{locale}": {
+              stemmed: {
                 type: type,
                 analyzer: analyzer
               }
@@ -187,7 +187,7 @@ module ElasticSearcher
       puts JSON.pretty_generate(opts)
       raise e
     end
-    if !@mappers[opts[:index]] || @mappers[opts[:index]] < 30.minutes.ago
+    if locale == 'en' && (!@mappers[opts[:index]] || @mappers[opts[:index]] < 30.minutes.ago)
       self.searcher.indices.put_mapping index: opts[:index], type: opts[:type], body: update
       @mappers[opts[:index]] = Time.now
     end
