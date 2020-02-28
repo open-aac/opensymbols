@@ -129,9 +129,37 @@ module ElasticSearcher
   end
 
   MAPPING_LOCALES = {
-    'en' => 'english'
-  }
-  
+    'en' => 'english',
+    'ar' => 'arabic',
+    'hy' => armenian, 
+    'eu' => basque, 
+    'bn' => bengali, 
+    'bg' => bulgarian, 
+    'ca' => catalan, 
+    'cs' => czech, 
+    'nl' => dutch, 
+    'fi' => finnish, 
+    'fr' => french, 
+    'gl' => galician, 
+    'de' => german, 
+    'hi' => hindi, 
+    'hu' => hungarian, 
+    'id' => indonesian, 
+    'ga' => irish, 
+    'it' => italian, 
+    'lv' => latvian, 
+    'lt' => lithuanian, 
+    'nb' => norwegian, 
+    'nn' => norwegian, 
+    'pt' => portuguese, 
+    'ro' => romanian, 
+    'ru' => russian, 
+    'ckb' => sorani, 
+    'es' => spanish, 
+    'sv' => swedish, 
+    'tr' => turkish
+}
+
   def self.index(opts)
     opts[:index] = self.env_index(opts[:index])
     locale = opts.delete(:locale)

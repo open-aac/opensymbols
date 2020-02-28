@@ -23,7 +23,7 @@ class PictureSymbol < ApplicationRecord
   end
 
   def submit_to_external_index
-    locales = ['en']
+    locales = self.settings['locales'].keys | ['en']
     locales.each do |locale|
       if ElasticSearcher.enabled?
         if self.settings['enabled'] == false
@@ -173,12 +173,20 @@ class PictureSymbol < ApplicationRecord
     end
     # TODO: https://gist.github.com/BrianTheCoder/217158
     if ElasticSearcher.enabled?
-      res = ElasticSearcher.search_symbols(q, locale, {
+      res = nil
+      begin
+        search_opts = {
           repo_filter: repo_filter, 
           safe_search: safe_search, 
           allow_protected: allow_protected,
           protected_repos: protected_repos || []
-      })
+        }
+        res = ElasticSearcher.search_symbols(q, locale, search_opts)
+      rescue => e
+        if locale != 'en'
+          res = ElasticSearcher.search_symbols(q, 'en', search_opts)
+        end
+      end
   
       bucket = ENV['S3_BUCKET']
       cdn = ENV['S3_CDN']
@@ -214,7 +222,7 @@ class PictureSymbol < ApplicationRecord
     fn = data['filename']
     symbol_key = PictureSymbol.keyify(data['name'], fn)
     symbol = PictureSymbol.find_or_initialize_by(:repo_key => repo_key, :symbol_key => symbol_key)
-    locale = symbol['locale'] || 'en'
+    locale = data['locale'] || 'en'
     already_processed = !!symbol.id
     return if already_processed && skip_update
     symbol.settings ||= {}
@@ -233,10 +241,25 @@ class PictureSymbol < ApplicationRecord
     symbol.settings['locales'][locale] ||= {}
     symbol.settings['locales'][locale]['name'] = data['name']
     symbol.settings['locales'][locale]['description'] = data['description']
+    (data['locales'] || {}).each do |loc, hash|
+      symbol.settings['locales'][loc] ||= {}
+      if loc == locale
+        symbol.settings['locales'][loc]['name'] ||= hash['name']
+        symbol.settings['locales'][loc]['description'] ||= hash['description']
+      else
+        symbol.settings['locales'][loc]['name'] = hash['name']
+        symbol.settings['locales'][loc]['description'] = hash['description']
+      end
+    end
     symbol.save
     if !already_processed
       (data['default_words'] || []).each do |word|
         symbol.set_as_default(word, locale)
+      end
+      (data['locales'] || {}).each do |loc, hash|
+        (hash['default_words'] || []).each do |word|
+          symbol.set_as_default_word(word, loc)
+        end
       end
     end
     puts symbol.obj_json.to_json
