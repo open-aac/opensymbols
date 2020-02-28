@@ -9,6 +9,15 @@ class PictureSymbol < ApplicationRecord
     self.random = rand(99999999)
     self.settings ||= {}
     self.settings['locales'] ||= {}
+    self.settings['locales'].each do |loc, hash|
+      if !hash['name'] || hash['name_defaulted']
+        most_common = (hash['uses'] || {}).map{|str, list| [str, list.length]}.sort_by(&:last)[-1]
+        if most_common && most_common[1] > 3
+          hash['name'] = most_common[0]
+          hash['name_defaulted'] = true
+        end
+      end
+    end
     self.generate_search_string
     self.generate_use_counts
   end

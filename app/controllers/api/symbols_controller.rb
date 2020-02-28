@@ -19,6 +19,7 @@ class Api::SymbolsController < ApplicationController
     return unless exists?(symbol, params['id'])
     if params['locale']
       symbol.settings['locales'][params['locale']]['name'] = params['name'] if !params['name'].blank?
+      symbol.settings['locales'][params['locale']].delete('name_defaulted')
       symbol.settings['locales'][params['locale']]['description'] = params['description'] if !params['description'].blank?
       symbol.settings['name'] = params['name'] if params['locale'] == 'en' && !params['name'].blank?
       symbol.settings['description'] = params['description'] if params['locale'] == 'en' && !params['description'].blank?
