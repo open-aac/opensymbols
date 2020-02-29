@@ -261,9 +261,51 @@
                     }
                   });
                 })
+                var $alts = $("<span/>", {class: 'alts'});
+                var $a2 = $("<a/>", {href: '#'}).text('load alternates');
+                $a2.click(function(event) {
+                  event.preventDefault();
+                  search(word.keyword).then(function(data) {
+                    $alts.empty();
+                    for(var idx in data) {
+                      var symbol = data[idx];
+                      symbol.image_url;
+                      var $link = $("<a/>", {href: '#'});
+                      var $img = $("<img/>", {src: symbol.image_url, class: 'image_option'});
+                      $link.append($img);
+                      $link.click(function(event) {
+                        event.preventDefault();
+
+                        session.ajax({
+                          url: '/api/v2/symbols/' + symbol.repo_key + '/' + symbol.symbol_key + '/default',
+                          data: {
+                            locale: locale,
+                            keyword: word.keyword
+                          },
+                          type: 'POST',
+                          success: function(data) {
+                            $image.attr('src', $image.attr('src'));
+                          },
+                          error: function() {
+                            alert('setting default failed');
+                          }
+                        });
+                        // set as default for image
+                      })
+                      $alts.append($link);
+                    }
+                    if(data.length == 0) {
+                      $alts.text("No results found");
+                    }
+                  }, function(err) {
+                    $alts.text("Error retrieving results");
+                  })
+                });
+                $alts.append($a2);
                 $word.append($name);
                 $word.append($image);
                 $word.append($a);
+                $word.append($alts);
                 $("#defaults").append($word);
                 // word.symbol_key
                 // word.image_url
@@ -282,6 +324,23 @@
     } else {
       $("#defaults").text("No defaults set");
     }
+  });
+
+  $("#load_alts").click(function(event) {
+    event.preventDefault();
+    var list = [];
+    $("#defaults .alts a").each(function() {
+      list.push($(this));
+    });
+    var next_batch = function() {
+      for(var idx = 0; idx < 5 && list.length > 0; idx++) {
+        $(list.shift()).click();
+      }
+      if(list.length > 0) {
+        setTimeout(next_batch, 1000);
+      }
+    };
+    next_batch();
   });
   
   $("#more_symbols").click(function(event) {

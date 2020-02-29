@@ -3,6 +3,8 @@ require 'typhoeus'
 class SymbolRepository < ApplicationRecord
   include SecureSerialize
 
+  has_many :repository_modifiers
+
   secure_serialize :settings
   before_save :generate_defaults
 
@@ -56,9 +58,10 @@ class SymbolRepository < ApplicationRecord
   def missing_core_words
     lists = self.class.core_lists
     res = {}
-    self.settings['defaults'] ||= {}
+    mods = {}
+    self.repository_modifiers.each{|mod| mods[mod.locale] = mod }
     lists.each do |locale, list|
-      localized = self.settings['defaults'][locale] || {}
+      localized = (mods[locale] || self).settings['defaults'] || {}
       res[locale] = []
       list.each do |word|
         res[locale] << word unless localized[word]
@@ -70,9 +73,10 @@ class SymbolRepository < ApplicationRecord
   def default_core_words
     lists = self.class.core_lists
     res = {}
-    self.settings['defaults'] ||= {}
+    mods = {}
+    self.repository_modifiers.each{|mod| mods[mod.locale] = mod }
     lists.each do |locale, list|
-      localized = self.settings['defaults'][locale] || {}
+      localized = (mods[locale] || self).settings['defaults'] || {}
       res[locale] = {}
       list.each do |word|
         res[locale][word] = localized[word] if localized[word]

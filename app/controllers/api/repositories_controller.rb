@@ -42,7 +42,8 @@ class Api::RepositoriesController < ApplicationController
 
     # get the image_urls for all the keyword-defaulted symbols
     symbol_keys = []
-    repo.settings['defaults'][locale].each do |keyword, symbol_key|
+    mod = RepositoryModifier.find_for(repo, locale)
+    mod.settings['defaults'].each do |keyword, symbol_key|
       symbol_keys << symbol_key if keys.include?(keyword)
     end
     symbols = PictureSymbol.where(repo_key: repo.repo_key, symbol_key: symbol_keys)
@@ -53,7 +54,7 @@ class Api::RepositoriesController < ApplicationController
     res = []
     words = (((SymbolRepository.core_lists[locale] || []) & keys) + keys).uniq
     words.each do |word|
-      symbol_key = repo.settings['defaults'][locale][word]
+      symbol_key = mod.settings['defaults'][word]
       res << {
         keyword: word,
         symbol_key: symbol_key,

@@ -1,0 +1,38 @@
+class RepositoryModifier < ApplicationRecord
+  include SecureSerialize
+
+  belongs_to :symbol_repository
+
+  secure_serialize :settings
+  before_save :generate_defaults
+
+  def generate_defaults
+    self.settings ||= {}
+    self.settings['defaults'] ||= {}
+    self.repo_key = self.symbol_repository.repo_key
+  end
+
+  def self.find_for(repo, locale)
+    modifier = RepositoryModifier.find_or_create_by(symbol_repository_id: repo, locale: locale)
+    if (repo.settings['defaults'] && repo.settings['defaults'][locale]) || (repo.settings['boosts'] && repo.settings['boosts'][locale])
+      repo.settings['defaults'][locale].each do |keyword, symbol_key|
+        modifier.settingss['defaults'][keyword] ||= symbol_key
+      end
+      repo.settings['defaults'].del(locale)
+      repo.save
+      modifier.save
+    end
+    modifier
+  end
+
+  def set_as_default(symbol, keyword)
+    self.settings['defaults'] ||= {}
+    self.settings['defaults']
+    if keyword.match(/^del:/)
+      self.settings['defaults'].delete(keyword.sub(/^del:/, ''))
+    else
+      repo.settings['defaults'][keyword] = symbol.symbol_key
+    end
+    repo.save!
+  end
+end

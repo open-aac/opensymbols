@@ -33,6 +33,7 @@ class PictureSymbol < ApplicationRecord
         end
       end
     end
+    true
   end
 
   def generate_search_string
@@ -78,18 +79,13 @@ class PictureSymbol < ApplicationRecord
   end
 
   def set_as_default(keyword, locale)
+    return unless keyword
     keyword = keyword.downcase
     symbol = self
     repo = SymbolRepository.find_by(repo_key: self.repo_key)
     if symbol && repo
-      repo.settings['defaults'] ||= {}
-      repo.settings['defaults'][locale] ||= {}
-      if keyword.match(/^del:/)
-        repo.settings['defaults'][locale].delete(keyword.sub(/^del:/, ''))
-      else
-        repo.settings['defaults'][locale][keyword] = symbol_key
-      end
-      repo.save!
+      modifier = RepositoryModifier.load_for(repo, locale)
+      modifier.set_as_default(symbol, keyword)
       symbol.boost(keyword, locale, 5)
     end
   end
@@ -99,8 +95,9 @@ class PictureSymbol < ApplicationRecord
     res = {}
     (self.settings['locales'] || {}).each do |locale, localized|
       res[locale] = {}.merge(localized)
-      if repo && repo.settings && repo.settings['defaults'] && repo.settings['defaults'][locale]
-        res[locale]['defaults'] = repo.settings['defaults'][locale].select{|keyword, symbol_key| symbol_key == self.symbol_key}.map(&:first)
+      modifier = RepositoryModifier.load_for(repo, locale)
+      if modifier
+        res[locale]['defaults'] = modifier.settings['defaults'].select{|keyword, symbol_key| symbol_key == self.symbol_key}.map(&:first)
       end
     end
     res
@@ -258,7 +255,7 @@ class PictureSymbol < ApplicationRecord
       end
       (data['locales'] || {}).each do |loc, hash|
         (hash['default_words'] || []).each do |word|
-          symbol.set_as_default_word(word, loc)
+          symbol.set_as_default(word, loc)
         end
       end
     end
