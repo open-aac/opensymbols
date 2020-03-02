@@ -23,7 +23,7 @@ class PictureSymbol < ApplicationRecord
       end
     end
     self.settings['locales'].each do |loc, hash|
-      hash['uses'].each do |word, list|
+      (hash['uses'] || {}).each do |word, list|
         if list.is_a?(Array) && list.length > 25
           hash['uses'][word] = {'count' => list.length, 'latest' => list[-5, 5]}
         elsif list.is_a?(Hash)
