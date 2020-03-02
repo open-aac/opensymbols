@@ -100,6 +100,7 @@ class PictureSymbol < ApplicationRecord
     mods = {}
     if symbol && repo
       defaults.each do |locale, keyword|
+        next unless keyword
         keyword = keyword.downcase
         modifier = mods[locale] || RepositoryModifier.find_for(repo, locale)
         mods[locale] = modifier
