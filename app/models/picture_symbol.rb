@@ -94,16 +94,27 @@ class PictureSymbol < ApplicationRecord
     end
   end
 
-  def set_as_default(keyword, locale)
-    return unless keyword
-    keyword = keyword.downcase
+  def set_defaults(defaults)
     symbol = self
     repo = SymbolRepository.find_by(repo_key: self.repo_key)
+    mods = {}
     if symbol && repo
-      modifier = RepositoryModifier.find_for(repo, locale)
-      modifier.set_as_default(symbol, keyword)
-      symbol.boost(keyword, locale, 5)
+      defaults.each do |locale, keyword|
+        keyword = keyword.downcase
+        modifier = mods[locale] || RepositoryModifier.find_for(repo, locale)
+        mods[locale] = modifier
+        modifier.set_as_default(symbol, keyword)
+        symbol.boost(keyword, locale, 5, false)
+      end
+      symbol.save if defaults.keys.length > 0
     end
+  end
+
+  def set_as_default(keyword, locale)
+    return unless keyword
+    hash = {}
+    hash[locale] = keyword
+    set_defaults(hash)
   end
 
   def locale_settings
@@ -125,7 +136,7 @@ class PictureSymbol < ApplicationRecord
       begin
         str = self.settings['image_url'].split(/\//)[-1].split(/\./)[0]
         self.settings['emoji'] = str
-        self.boost(str, 'en')
+        self.boost(str, 'en', nil, false)
         str = str.split(/-/).map{|s| s.hex }
         code = str.pack("U*")
         self.boost(code, 'en')
@@ -137,7 +148,7 @@ class PictureSymbol < ApplicationRecord
     res
   end
 
-  def boost(keyword, locale, factor=nil)
+  def boost(keyword, locale, factor=nil, do_save=true)
     keyword = keyword.downcase
     factor ||= 3
     symbol = self
@@ -152,7 +163,7 @@ class PictureSymbol < ApplicationRecord
       end
       symbol.settings['locales'][locale] = localized
       symbol.generate_use_counts
-      symbol.save
+      symbol.save if do_save
     end
     symbol
   end
@@ -273,14 +284,18 @@ class PictureSymbol < ApplicationRecord
     end
     symbol.save
     if !already_processed
+      defaults = {}
       (data['default_words'] || []).each do |word|
-        symbol.set_as_default(word, locale)
+        defaults[locale] = word
+        # symbol.set_as_default(word, locale, false)
       end
       (data['locales'] || {}).each do |loc, hash|
         (hash['default_words'] || []).each do |word|
-          symbol.set_as_default(word, loc)
+          defaults[loc] = word
+          # symbol.set_as_default(word, loc, false)
         end
       end
+      symbol.set_defaults(defaults)
     end
     puts symbol.obj_json.to_json
     symbol
