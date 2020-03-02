@@ -1,0 +1,45 @@
+<%= render 'shared/header' %>
+<style>
+#results .term {
+  border-bottom: 1px solid #eee;
+  padding: 10px 20px;
+}
+#results .term .word {
+  display: inline-block; 
+  width: 300px;
+  font-size: 25px;
+}
+#results .term img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  object-position: center;
+  cursor: pointer;
+}
+</style>
+<div class="row" style="margin-bottom: 20px;">
+  <div class="span3">
+    CORE WORDS
+  </div>
+  <div class="span6">
+    <h1>Default Results</h1>
+    <dl class="dl-horizontal">
+      <dt>Search:</dt>
+        <dd>
+          <input type='text' placeholder='search' id='base_search_text' style='margin-bottom: 0; width: 200px;'/>
+          <input type="text" id="locale" value='en' style='margin-bottom: 0; width: 30px;'/>
+          <a href='#' class='btn' id='base_search'>Go</a>
+          <a href='#' class='btn' id='clear_base_search'>Show All</a>
+        </dd>
+    </dl>
+  </div>
+</div>
+<div class="row">
+  <div id='results'>
+  </div>
+</div>
+<% add_script '/core.js' %>
+<script>
+  var S3Bucket = "<%= ENV['S3_BUCKET'] %>";
+  var core = <%= @core_lists.to_json.html_safe %>;
+</script>

@@ -40,6 +40,11 @@ class IndexController < ApplicationController
     return api_error(400, "Invalid symbol") unless @symbol
   end
 
+  def core
+    return api_error(400, 'Not authorized') unless @authenticated
+    @core_lists = SymbolRepository.core_lists
+  end
+
   def stats
   end
 end

@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   root 'index#root'
   get '/search' => 'index#search'
   get '/editor' => 'index#editor'
+  get '/core' => 'index#core'
   get '/badge_maker' => 'index#badge_maker'
   get '/word_maker' => 'index#word_maker'
   get '/word_art' => 'index#word_art'

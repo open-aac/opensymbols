@@ -228,6 +228,11 @@
           if(!data || data.length == 0) {
             $("#defaults").text("No Default Symbols found");
           } else {
+            var image_urls = {};
+            data.forEach(function(word) {
+              image_urls[word.image_url] = image_urls[word.image_url] || [];
+              image_urls[word.image_url].push(word.keyword);
+            });
             data.forEach(function(word) {
               if(word.image_url && word.image_url.match(/^\//)) {
                 word.image_url = "https://s3.amazonaws.com/" + S3Bucket + word.image_url;
@@ -262,6 +267,10 @@
                   });
                 })
                 var $alts = $("<span/>", {class: 'alts'});
+                if((image_urls[word.image_url] || []).length > 1) {
+                  var others = image_urls[word.image_url].filter(function(w) { return w != word.keyword; }).join(", ");
+                  $alts.text("dups: " + others);
+                }
                 var $a2 = $("<a/>", {href: '#'}).text('load alternates');
                 $a2.click(function(event) {
                   event.preventDefault();
@@ -307,9 +316,6 @@
                 $word.append($a);
                 $word.append($alts);
                 $("#defaults").append($word);
-                // word.symbol_key
-                // word.image_url
-                // add the result, including an option to remove it
               }
             });
           }
