@@ -15,7 +15,7 @@
       $term.append($word);
       $term.append($list);
       $("#results").append($term);
-      var search = function() {
+      var search = function(done_callback) {
         $list.empty();
         session.ajax({
           type: 'GET',
@@ -32,20 +32,22 @@
                   data: {
                     value: 10,
                     locale: locale,
-                    keyword: wod
+                    keyword: word
                   },
                   type: 'POST',
                   success: function(data) {
-                    search();
+                    search(function() { });
                   },
                   error: function() {
                     alert('boost failed');
                   }
                 });
               });
-            })
+            });
+            done_callback();
           }, error: function(xhr, status) {
             $list.text("Error loading");
+            done_callback();
           },
           dataType: "json"
         });
@@ -53,11 +55,15 @@
       lookups.push(search);
     });
     var next_batch = function() {
-      for(var idx = 0; idx < 5 && lookups.length > 0; idx++) {
-        (lookups.shift())();
-      }
-      if(lookups.length > 0) {
-        setTimeout(next_batch, 500);
+      var dones = 0;
+      var batch_size = 5;
+      for(var idx = 0; idx < batch_size && lookups.length > 0; idx++) {
+        (lookups.shift())(function() {
+          dones++;
+          if(dones >= batch_size) {
+            setTimeout(next_batch, 500);
+          }
+        });
       }
     };
     next_batch();
