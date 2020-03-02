@@ -32,8 +32,8 @@ class RepositoryModifier < ApplicationRecord
     if keyword.match(/^del:/)
       self.settings['defaults'].delete(keyword.sub(/^del:/, ''))
     else
-      repo.settings['defaults'][keyword] = symbol.symbol_key
+      self.settings['defaults'][keyword] = symbol.symbol_key
     end
-    repo.save!
+    self.save!
   end
 end
