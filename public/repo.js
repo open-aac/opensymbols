@@ -277,8 +277,9 @@
                 var $a2 = $("<a/>", {href: '#'}).text('load alternates');
                 $a2.click(function(event) {
                   event.preventDefault();
-                  search(word.keyword).then(function(data) {
+                  search(word.keyword + " repo:" + repo.repo_key).then(function(data) {
                     $alts.empty();
+                    data = data.slice(0, 10);
                     for(var idx in data) {
                       var symbol = data[idx];
                       symbol.image_url;
