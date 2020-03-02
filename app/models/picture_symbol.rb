@@ -41,8 +41,9 @@ class PictureSymbol < ApplicationRecord
     self.settings['locales'] ||= {}
     locales.each do |locale|
       localized = self.settings['locales'][locale] || {}
-      uses = (localized['uses'] || {}).map{|keyword, list| [keyword, list.length] }.sort_by{|keyword, count| count }.map(&:first)
+      uses = []
       uses += (localized['boosts'] || {}).keys
+      uses += (localized['uses'] || {}).map{|keyword, list| [keyword, list.length] }.sort_by{|keyword, count| count }.map(&:first)
       recommendations = (localized['recommendations'] || {}).map{|keyword, list| [keyword, list.length] }.sort_by{|keyword, count| count }.map(&:first)
       name = localized['name'] || self.settings['name']
       description = localized['description'] || self.settings['description']

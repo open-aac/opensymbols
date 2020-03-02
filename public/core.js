@@ -16,12 +16,12 @@
       $term.append($list);
       $("#results").append($term);
       var search = function(done_callback) {
-        $list.empty();
         $list.text("Loading...");
         session.ajax({
           type: 'GET',
           url: "/api/v1/symbols/search?q=" + word,
           success: function(data) {
+            $list.empty();
             data.slice(0, 10).forEach(function(symbol) {
               var $img = $("<img/>", {id: "s" + symbol.id, src: symbol.image_url});
               $list.append($img);

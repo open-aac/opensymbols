@@ -103,7 +103,7 @@ module ElasticSearcher
       res = hit['_source']
       res['use_scores'] = JSON.parse(res['use_scores']) if res['use_scores'].is_a?(String)
       res['use_score'] = ((res['use_scores'] && res['use_scores'][q]) || 1.0)
-      res['relevance'] = hit['_score'] * res['use_score']
+      res['relevance'] = hit['_score'] * (res['use_score'] / 3.0)
       res['relevance'] *= 2 if (res['name'] || "").downcase == q.downcase
       res
     }.select{|hit|
