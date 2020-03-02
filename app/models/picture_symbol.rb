@@ -10,6 +10,10 @@ class PictureSymbol < ApplicationRecord
     self.settings ||= {}
     self.settings['locales'] ||= {}
     self.settings['locales'].each do |loc, hash|
+      if loc == 'en' && self.settings['name']
+        hash['name'] = self.settings['name'] 
+        hash.delete('name_defaulted')
+      end
       if !hash['name'] || hash['name_defaulted']
         most_common = (hash['uses'] || {}).map{|str, list| [str, list.length]}.sort_by(&:last)[-1]
         if most_common && most_common[1] > 3

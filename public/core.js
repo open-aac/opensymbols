@@ -27,6 +27,7 @@
               $list.append($img);
               $img.click(function(event) {
                 event.preventDefault();
+                $term.addClass('modified');
                 $list.empty();
                 session.ajax({
                   url: '/api/v2/symbols/' + symbol.repo_key + '/' + symbol.symbol_key + '/boost',
@@ -37,7 +38,9 @@
                   },
                   type: 'POST',
                   success: function(data) {
-                    search(function() { });
+                    setTimeout(function() {
+                      search(function() { });
+                    }, 2000);
                   },
                   error: function() {
                     alert('boost failed');
