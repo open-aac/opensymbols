@@ -17,6 +17,7 @@
       $("#results").append($term);
       var search = function(done_callback) {
         $list.empty();
+        $list.text("Loading...");
         session.ajax({
           type: 'GET',
           url: "/api/v1/symbols/search?q=" + word,

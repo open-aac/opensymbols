@@ -84,7 +84,7 @@ class PictureSymbol < ApplicationRecord
     symbol = self
     repo = SymbolRepository.find_by(repo_key: self.repo_key)
     if symbol && repo
-      modifier = RepositoryModifier.load_for(repo, locale)
+      modifier = RepositoryModifier.find_for(repo, locale)
       modifier.set_as_default(symbol, keyword)
       symbol.boost(keyword, locale, 5)
     end
@@ -95,7 +95,7 @@ class PictureSymbol < ApplicationRecord
     res = {}
     (self.settings['locales'] || {}).each do |locale, localized|
       res[locale] = {}.merge(localized)
-      modifier = RepositoryModifier.load_for(repo, locale)
+      modifier = RepositoryModifier.find_for(repo, locale)
       if modifier
         res[locale]['defaults'] = modifier.settings['defaults'].select{|keyword, symbol_key| symbol_key == self.symbol_key}.map(&:first)
       end
