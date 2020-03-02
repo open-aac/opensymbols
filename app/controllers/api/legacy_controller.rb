@@ -42,7 +42,7 @@ class Api::LegacyController < ApplicationController
     return unless exists?(symbol, params['id'])
     user_id = @token.user_id(params['user_id'])
     locale = (params['locale'] || 'en').split(/[-_]/)[0]
-    symbol.used_for_keyword(params['keyword'], locale, user_id)
+    # symbol.used_for_keyword(params['keyword'], locale, user_id)
     render json: {tracked: true}
   end
 
