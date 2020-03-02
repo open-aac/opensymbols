@@ -15,10 +15,19 @@ class PictureSymbol < ApplicationRecord
         hash.delete('name_defaulted')
       end
       if !hash['name'] || hash['name_defaulted']
-        most_common = (hash['uses'] || {}).map{|str, list| [str, list.length]}.sort_by(&:last)[-1]
+        most_common = (hash['uses'] || {}).map{|str, list| list ||= []; [str, (list.is_a?(Array) ? list.length : list['count'])]}.sort_by(&:last)[-1]
         if most_common && most_common[1] > 3
           hash['name'] = most_common[0]
           hash['name_defaulted'] = true
+        end
+      end
+    end
+    self.settings['locales'].each do |loc, hash|
+      hash['uses'].each do |word, list|
+        if list.is_a?(Array) && list.length > 25
+          hash['uses'][word] = {'count' => list.length, 'latest' => list[-5, 5]}
+        elsif list.is_a?(Hash)
+          hash['uses'][word]['latest'] = (hash['uses'][word]['latest'] || [])[-5, 5]
         end
       end
     end
@@ -44,10 +53,11 @@ class PictureSymbol < ApplicationRecord
     locales = ['en']
     self.settings['locales'] ||= {}
     locales.each do |locale|
+      puts locale
       localized = self.settings['locales'][locale] || {}
       uses = []
       uses += (localized['boosts'] || {}).keys
-      uses += (localized['uses'] || {}).map{|keyword, list| [keyword, list.length] }.sort_by{|keyword, count| count }.map(&:first)
+      uses += (localized['uses'] || {}).map{|keyword, list| list ||= []; [keyword, (list.is_a?(Array) ? list.length : list['count'])] }.sort_by{|keyword, count| count }.map(&:first)
       recommendations = (localized['recommendations'] || {}).map{|keyword, list| [keyword, list.length] }.sort_by{|keyword, count| count }.map(&:first)
       name = localized['name'] || self.settings['name']
       description = localized['description'] || self.settings['description']
@@ -69,7 +79,8 @@ class PictureSymbol < ApplicationRecord
       (localized['uses'].keys | localized['recommendations'].keys | localized['boosts'].keys).each do |q|
         q = q.gsub(/\./, '')
         next if q.scan(/\s+/).length > 3
-        uses = ((localized['uses'] || {})[q] || []).length
+        uses_obj = ((localized['uses'] || {})[q] || [])
+        uses = uses_obj.is_a?(Array) ? uses_obj.length : uses_obj['count']
         recommendations = ((localized['recommendations'] || {})[q] || []).length
         use_score = uses + (recommendations * 4)
         use_score = Math.log(use_score.to_f + 0.1, 4).ceil
@@ -150,7 +161,13 @@ class PictureSymbol < ApplicationRecord
     keyword = keyword.downcase
     localized = self.settings['locales'][locale] || {}
     localized['uses'] ||= {}
-    localized['uses'][keyword] = ((localized['uses'][keyword] || []) << user_id.to_s).uniq
+    localized['uses'][keyword] ||= []
+    if localized['uses'][keyword].is_a?(Array)
+      localized['uses'][keyword] = (localized['uses'][keyword] << user_id.to_s).uniq
+    elsif !(localized['uses'][keyword]['latest'] || []).include?(user_id.to_s)
+      localized['uses'][keyword]['count'] += 1
+      localized['uses'][keyword]['latest'] << user_id.to_s
+    end
     self.settings['locales'][locale] = localized
     self.settings['rnd'] = rand(999)
     self.save
