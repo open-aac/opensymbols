@@ -131,7 +131,8 @@ class PictureSymbol < ApplicationRecord
       if keyword.match(/^del:/)
         localized['boosts'].delete(keyword.sub(/^del:/, ''))
       else
-        localized['boosts'][keyword] = factor
+        localized['boosts'][keyword] ||= 0
+        localized['boosts'][keyword] += factor
       end
       symbol.settings['locales'][locale] = localized
       symbol.generate_use_counts
