@@ -60,6 +60,10 @@ class SymbolRepository < ApplicationRecord
     res = {}
     mods = {}
     self.repository_modifiers.each{|mod| mods[mod.locale] = mod }
+    (self.settings['defaults'] || []).each do |locale, defaults|
+      mod = RepositoryModifier.find_for(self, locale)
+      mods[mod.locale] = mod
+    end
     lists.each do |locale, list|
       localized = (mods[locale] || self).settings['defaults'] || {}
       res[locale] = []
@@ -75,6 +79,10 @@ class SymbolRepository < ApplicationRecord
     res = {}
     mods = {}
     self.repository_modifiers.each{|mod| mods[mod.locale] = mod }
+    (self.settings['defaults'] || []).each do |locale, defaults|
+      mod = RepositoryModifier.find_for(self, locale)
+      mods[mod.locale] = mod
+    end
     lists.each do |locale, list|
       localized = (mods[locale] || self).settings['defaults'] || {}
       res[locale] = {}

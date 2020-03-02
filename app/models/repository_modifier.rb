@@ -10,15 +10,16 @@ class RepositoryModifier < ApplicationRecord
     self.settings ||= {}
     self.settings['defaults'] ||= {}
     self.repo_key = self.symbol_repository.repo_key
+    true
   end
 
   def self.find_for(repo, locale)
-    modifier = RepositoryModifier.find_or_create_by(symbol_repository_id: repo, locale: locale)
-    if (repo.settings['defaults'] && repo.settings['defaults'][locale]) || (repo.settings['boosts'] && repo.settings['boosts'][locale])
+    modifier = RepositoryModifier.find_or_create_by(symbol_repository_id: repo.id, locale: locale)
+    if repo.settings['defaults'] && repo.settings['defaults'][locale]
       repo.settings['defaults'][locale].each do |keyword, symbol_key|
-        modifier.settingss['defaults'][keyword] ||= symbol_key
+        modifier.settings['defaults'][keyword] ||= symbol_key
       end
-      repo.settings['defaults'].del(locale)
+      repo.settings['defaults'].delete(locale)
       repo.save
       modifier.save
     end
