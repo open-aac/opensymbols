@@ -234,6 +234,7 @@
               image_urls[word.image_url].push(word.keyword);
             });
             data.forEach(function(word) {
+              var ref_url = word.image_url;
               if(word.image_url && word.image_url.match(/^\//)) {
                 word.image_url = "https://s3.amazonaws.com/" + S3Bucket + word.image_url;
               }
@@ -267,8 +268,8 @@
                   });
                 })
                 var $alts = $("<span/>", {class: 'alts'});
-                if((image_urls[word.image_url] || []).length > 1) {
-                  var others = image_urls[word.image_url].filter(function(w) { return w != word.keyword; }).join(", ");
+                if((image_urls[ref_url] || []).length > 1) {
+                  var others = image_urls[ref_url].filter(function(w) { return w != word.keyword; }).join(", ");
                   $alts.text("dups: " + others);
                 }
                 var $a2 = $("<a/>", {href: '#'}).text('load alternates');
