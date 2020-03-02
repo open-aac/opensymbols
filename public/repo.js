@@ -268,9 +268,11 @@
                   });
                 })
                 var $alts = $("<span/>", {class: 'alts'});
+                $alts.attr('marginLeft', '10px');
                 if((image_urls[ref_url] || []).length > 1) {
                   var others = image_urls[ref_url].filter(function(w) { return w != word.keyword; }).join(", ");
-                  $alts.text("dups: " + others);
+                  $alts.text(" dups: " + others);
+                  $word.addClass('dup');
                 }
                 var $a2 = $("<a/>", {href: '#'}).text('load alternates');
                 $a2.click(function(event) {
