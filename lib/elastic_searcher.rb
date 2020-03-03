@@ -103,7 +103,7 @@ module ElasticSearcher
     res = raw_list['hits']['hits'].map{ |hit|
       res = hit['_source']
       # don't show repeat search results (result of multi-index search)
-      return nil if found_ids[res['id']]
+      # return nil if found_ids[res['id']]
       found_ids[res['id']] = true
       res['use_scores'] = JSON.parse(res['use_scores']) if res['use_scores'].is_a?(String)
       res['use_score'] = ((res['use_scores'] && res['use_scores'][q]) || 1.0)
