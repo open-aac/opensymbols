@@ -26,6 +26,17 @@ class RepositoryModifier < ApplicationRecord
     modifier
   end
 
+  def clear_extras
+    words = {}
+    (SymbolRepository.core_lists[self.locale] || []).each{|w| w && (words[w.downcase] = true) }
+    self.settings['defaults'].each do |keyword, symbol|
+      if !keyword || !words[keyword.downcase]
+        self.settings['defaults'].delete(keyword)
+      end
+    end
+    self.save
+  end
+
   def set_as_default(symbol, keyword)
     self.settings['defaults'] ||= {}
     self.settings['defaults']

@@ -97,6 +97,9 @@ class PictureSymbol < ApplicationRecord
   def set_defaults(defaults)
     symbol = self
     repo = SymbolRepository.find_by(repo_key: self.repo_key)
+    # only remember as the default for known core words,
+    # otherwise justs boost without marking as default
+    core_lists = SymbolRepository.core_lists
     mods = {}
     if symbol && repo
       defaults.each do |locale, keyword|
@@ -104,7 +107,9 @@ class PictureSymbol < ApplicationRecord
         keyword = keyword.downcase
         modifier = mods[locale] || RepositoryModifier.find_for(repo, locale)
         mods[locale] = modifier
-        modifier.set_as_default(symbol, keyword)
+        if (core_lists[locale] || {}).include?(keyword)
+          modifier.set_as_default(symbol, keyword)
+        end
         symbol.boost(keyword, locale, 5, false)
       end
       symbol.save if defaults.keys.length > 0
@@ -287,18 +292,16 @@ class PictureSymbol < ApplicationRecord
     if !already_processed
       defaults = {}
       (data['default_words'] || []).each do |word|
-        defaults[locale] = word
-        # symbol.set_as_default(word, locale, false)
+        defaults[locale] = word if word
       end
       (data['locales'] || {}).each do |loc, hash|
         (hash['default_words'] || []).each do |word|
-          defaults[loc] = word
-          # symbol.set_as_default(word, loc, false)
+          defaults[loc] = word if word
         end
       end
       symbol.set_defaults(defaults)
     end
-    puts symbol.obj_json.to_json
+    # puts symbol.obj_json.to_json
     symbol
   end
 
