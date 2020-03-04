@@ -1,0 +1,206 @@
+<style>
+.call {
+  border-top: 1px solid #ccc;
+  padding-top: 10px;
+  margin-top: 10px;
+}
+.row, p {
+  font-size: 15px;
+}
+.results {
+  max-height: 500px;
+  overflow: auto;
+}
+</style>
+<%= render 'shared/header' %>
+<div class="row">
+  <div class="span8 offset2">
+    <h1>OpenSymbols API Documentation</h1>
+    <br/>
+    <p>OpenSymbols is an open-licensed repository of picture
+    symbols. You can query the API to search for symbol 
+    results that match your criteria. We are happy to support
+    apps and web sites that would like to use the API to
+    implement picture search inside their solution.</p>
+    <p>OpenSymbols API access requires a shared secret. Please
+    contact us if you are interested in using OpenSymbols for
+    search. All public APIs require an access token, which
+    must either be set as <code>access_token</code> URL query
+    parameter, or as <code>Authorization</code> HTTP header.</p>
+    <p>To generate an access token, you will make an API call
+    to the <code>secret</code> endpoint as defined below and
+    receive a short-lived access token. This can be used for
+    multiple requests but should not be considered a
+    long-term token.</p>
+    <p>If your access token expires you will receive
+    a <code>401</code> HTTP response as defined in the
+    <code>secret</code> endpoint. If you make too many
+    requests too quickly you will receive <code>429</code>
+    throttling responses.</p>
+  </div>
+</div>
+<div class="row call">
+  <div class="span6">
+    <h2>POST <code>/api/v2/token</code></h1>
+    Generate access token. NOTE: Please takee the necessary
+    precautions to secure your shared secret. This should
+    not be accessible to the user or it will be compromised
+    (this includes adding it as a string in a compiled app).
+    <h3>Query Parameters</h3>
+    <dl classs='dl-horizontal'>
+      <dt>secret</dt>
+      <dd>shared secret as provided by us</dd>
+    </dl>
+    <h3>Results</h3>
+    This endpoint returns different result types than other
+    symbols endpoints due to optimization techniques, but should
+    be straightforward to understand:<br/>
+    <pre>HTTP 200
+{
+  "access_token": "abc123"
+}</pre>
+<h3 style='margin-top: 40px;'>Handling Errors</h3>
+<p>When accessing endpoints using your access token,
+you may receive error responses. If you try to use an expired access token you
+will receive a <code>401</code> HTTP response with
+the following JSON body:</p>
+<pre>HTTP 401
+{
+"token_expired": true
+}</pre>
+<p>When you receive <code>token_expired</code> you
+will need to make a new call to this access
+token generation endpoint to create a new access token.
+If it is easier, you are welcome to generate a new
+access token for each endpoint request.</p>
+<p>Additionally we throttle requests. In general you
+shouldn't run into an issue with throttling, but if you
+do you will receive an HTTP <code>429</code> response:</p>
+<pre>HTTP 429
+{
+"throttled": true
+}</pre>  
+<p>If you are repeatedly throttled and need more
+access, please let us know and we can discuss solutions.</p>
+</div>
+  <div class='span6 api_holder' id="api_token">
+    <h2>Generate an Access Token</h2>
+    <table>
+      <tbody>
+        <tr>
+          <th style='text-align: right; vertical-align: top; padding-right: 15px;'>secret</th>
+          <td>
+            <input type='text' id='token' name='secret' value=''/>
+          </td>
+        </tr>
+        <tr>
+          <td>
+          </td>
+          <td>
+            <a href="#" rel='/api/v2/token' class='submit post btn'>Submit</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>    
+    <div class='results_holder' style='margin-top: 20px; display: none;'>
+      <h3>Results</h3>
+      <pre class='results'><pre>
+    </div>
+  </div>
+</div>
+<div class="row call">
+  <div class="span6">
+    <h2>GET <code>/api/v2/symbols</code></h1>
+    Symbol search.
+    <h3>Query Parameters</h3>
+    <dl classs='dl-horizontal'>
+      <dt>q</dt>
+      <dd>(required) search term(s), may also append <code>repo:[repo_key]</code> to your query to limit results a specific library</dd>
+      <dt>locale</dt>
+      <dd>language/locale to search, supports two-character locales in lowercase (<code>es</code> not <code>en-US</code>), default is <code>en</code></dd>
+      <dt>safe</dt>
+      <dd>safe search, set to <code>0</code> to disable, default is enabled</dd>
+    </dl>
+    <h3>Results</h3>
+    <p>This endpoint returns different result types than other
+    symbols endpoints due to optimization techniques, but should
+    be straightforward to understand:</p>
+    <pre>HTTP 200
+[
+  {
+    "id": 2211,
+    "symbol_key": "castle-1-2fcbe1a4",
+    "name": "gato",
+    "locale": "es",
+    "license": "CC BY-NC-SA",
+    "license_url": "http://creativecommons.org/licenses/by-nc-sa/3.0/",
+    "author": "Sergio Palao",
+    "author_url": "http://www.catedu.es/arasaac/condiciones_uso.php",
+    "source_url": null,
+    "repo_key": "arasaac",
+    "hc": false, // (high-contrast)
+    "extension": "png",
+    "image_url": "https://etc...",
+    "search_string": null,
+    "unsafe_result": false,
+    "_href": "/api/v1/symbols/arasaac/castle-1-2fcbe1a4?id=2211",
+    "details_url": "/symbols/arasaac/castle-1-2fcbe1a4?id=2211",
+  },
+  {...},
+  ...
+]</pre>
+    <p>You may see other attributes returned in the results,
+    but these should not be considered reliable. Also note that
+    we do not return image dimensions or file size, sorry, we
+    didn't need it so I haven't added it. If you are
+    rendering via HTML consider <code>object-fit</code> and 
+    <code>object-position</code> to auto-center.</p>
+  </div>
+  <div class='span6 api_holder'>
+    <h3>Try it out...</h3>
+    <table>
+      <tbody>
+        <tr>
+          <th style='text-align: right; vertical-align: top; padding-right: 15px;'>access_token</th>
+          <td>
+            <input type='text' name='access_token' class='access_token' placeholder='generate an access token' value=''/>
+          </td>
+        </tr>
+        <tr>
+          <th style='text-align: right; vertical-align: top; padding-right: 15px;'>q</th>
+          <td>
+            <input type='text' name='q' value=''/>
+          </td>
+        </tr>
+        <tr>
+          <th style='text-align: right; vertical-align: top; padding-right: 15px;'>locale</th>
+          <td>
+            <input type='text' name='locale' value=''/>
+          </td>
+        </tr>
+        <tr>
+          <th style='text-align: right; vertical-align: top; padding-right: 15px;'>safe</th>
+          <td>
+            <input type='text' name='safe' value=''/>
+          </td>
+        </tr>
+        <tr>
+          <td>
+          </td>
+          <td>
+            <a href="#" rel='/api/v2/symbols' class='submit btn'>Submit</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>    
+    <div class='results_holder' style='margin-top: 20px; display: none;'>
+      <h3>Results</h3>
+      <pre class='results'><pre>
+    </div>
+  </div>
+</div>
+
+<script>
+  var token = "<%= @token %>";
+</script>
+<% add_script '/api.js' %>
