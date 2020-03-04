@@ -1,7 +1,17 @@
 class Api::SymbolsController < ApplicationController
-  before_action :require_authorization
+  before_action :require_authorization, :except => [:index]
 
   def index
+    cross_origin
+    return api_error(400, {error: 'invalid token'}) unless @valid_token
+    allow_protected = !!@admin
+    protected_repos = (@admin && params['q'].match(/repo/)) ? ['*'] : []
+    if params['search_token']
+      return unless valid_search_token?
+      allow_protected = true
+    end
+    results = PictureSymbol.search(params['q'], params['locale'] || 'en', params['safe'] != '0', allow_protected, protected_repos)
+    render json: results.to_json
   end
 
   def show
@@ -9,7 +19,7 @@ class Api::SymbolsController < ApplicationController
     symbol = PictureSymbol.find_by(repo_key: repo_key, symbol_key: symbol_key)
     symbol = nil if symbol.settings['enabled'] == false
     return unless exists?(symbol, params['id'])
-    render json: JsonApi::Symbol.as_json(symbol, wrapper: true, authenticated: @authenticated)
+    render json: JsonApi::Symbol.as_json(symbol, wrapper: true, authenticated: @admin)
   end
 
   def update
@@ -25,7 +35,7 @@ class Api::SymbolsController < ApplicationController
       symbol.settings['description'] = params['description'] if params['locale'] == 'en' && !params['description'].blank?
       symbol.save!
     end
-    render json: JsonApi::Symbol.as_json(symbol, wrapper: true, authenticated: @authenticated)
+    render json: JsonApi::Symbol.as_json(symbol, wrapper: true, authenticated: @admin)
   end
 
   def safe
@@ -35,7 +45,7 @@ class Api::SymbolsController < ApplicationController
     return unless exists?(symbol, params['symbol_id'])
     symbol.settings['unsafe_result'] = params['safe'] == 'false'
     symbol.save
-    render json: JsonApi::Symbol.as_json(symbol, wrapper: true, authenticated: @authenticated)
+    render json: JsonApi::Symbol.as_json(symbol, wrapper: true, authenticated: @admin)
   end
 
   def boost
@@ -44,7 +54,7 @@ class Api::SymbolsController < ApplicationController
     symbol = nil if symbol && symbol.settings['enabled'] == false
     return unless exists?(symbol, params['symbol_id'])
     symbol.boost(params['keyword'], params['locale'])
-    render json: JsonApi::Symbol.as_json(symbol, wrapper: true, authenticated: @authenticated)
+    render json: JsonApi::Symbol.as_json(symbol, wrapper: true, authenticated: @admin)
   end
 
   def default
@@ -54,7 +64,7 @@ class Api::SymbolsController < ApplicationController
     symbol = nil if symbol && symbol.settings['enabled'] == false
     return unless exists?(symbol, params['symbol_id'])
     symbol.set_as_default(params['keyword'], params['locale'])
-    render json: JsonApi::Symbol.as_json(symbol, wrapper: true, authenticated: @authenticated)
+    render json: JsonApi::Symbol.as_json(symbol, wrapper: true, authenticated: @admin)
   end
 
 end

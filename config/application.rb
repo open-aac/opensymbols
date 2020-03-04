@@ -6,7 +6,10 @@ require 'rails/all'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-Dotenv.load unless Rails.env.production?
+if !ENV['SECURE_ENCRYPTION_KEY'] || !Rails.env.production?
+  require 'dotenv'
+  Dotenv.load if defined?(Dotenv)
+end
 
 module OpenSymbols2
   class Application < Rails::Application

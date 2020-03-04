@@ -1,12 +1,8 @@
 class Api::LegacyController < ApplicationController
-  def remote_search
-    raise "nope"
-  end
-
   def repo_symbols
     cross_origin
     repo = SymbolRepository.find_by(:repo_key => params['repo_key'])
-    repo = nil if repo && repo.settings['protected'] && !@authenticated
+    repo = nil if repo && repo.settings['protected'] && !@admin
     return api_error(400, {error: 'not found'}) unless repo
     page = params['page'].to_i
     per_page = 60
@@ -23,26 +19,24 @@ class Api::LegacyController < ApplicationController
 
   def search
     cross_origin
-    allow_protected = !!@authenticated
-    protected_repos = (@authenticated && params['q'].match(/repo/)) ? ['*'] : []
+    allow_protected = !!@admin
+    protected_repos = (@admin && params['q'].match(/repo/)) ? ['*'] : []
     if params['search_token']
-      return unless valid_search_token?(params['search_token'])
-      token, repos = params['search_token'].split(/:/)
+      return unless valid_search_token?
       allow_protected = true
-      protected_repos = @allowed_repos
     end
     results = PictureSymbol.search(params['q'], params['locale'] || 'en', params['safe'] != '0', allow_protected, protected_repos)
     render json: results.to_json
   end
 
   def track_use
-    @token = ExternalSource.find_by(:token => params['access_token'])
-    return api_error(400, {:error => "token required"}) unless @token
+    return api_error(400, {:error => "token required"}) unless @valid_token
+    return api_error(400, {:error => "full access token required"}) if @limited_token
     symbol = PictureSymbol.find_by(:id => params['id'])
     return unless exists?(symbol, params['id'])
     user_id = @token.user_id(params['user_id'])
-    locale = (params['locale'] || 'en').split(/[-_]/)[0]
-    # symbol.used_for_keyword(params['keyword'], locale, user_id)
+    locale = (params['locale'] || 'en').downcase.split(/[-_]/)[0]
+    symbol.used_for_keyword(params['keyword'], locale, user_id)
     render json: {tracked: true}
   end
 
@@ -61,14 +55,11 @@ class Api::LegacyController < ApplicationController
   end
 
   def proxy
-    token = ExternalSource.find_by(:token => params['access_token'])
-    allowed = !!(session['human'] || token) || true
-    api_error(400, "") unless params['url'] && allowed
+    api_error(400, "") unless params['url'] && @valid_token
 
     uri = URI.parse(params['url']) rescue nil
     uri ||= URI.parse(URI.escape(params['url']))
-    # TODO: add timeout for slow requests
-    request = Typhoeus::Request.new(uri.to_s, followlocation: true, follow_location: true)
+    request = Typhoeus::Request.new(uri.to_s, followlocation: true, follow_location: true, timeout: 10)
     begin
       content_type, body = get_url_in_chunks(request)
     rescue BadFileError => e

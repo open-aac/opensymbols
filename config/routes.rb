@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   get '/search' => 'index#search'
   get '/editor' => 'index#editor'
   get '/core' => 'index#core'
+  get '/api' => 'index#api'
   get '/badge_maker' => 'index#badge_maker'
   get '/word_maker' => 'index#word_maker'
   get '/word_art' => 'index#word_art'
@@ -15,6 +16,7 @@ Rails.application.routes.draw do
   get '/stats' => 'index#stats'
   get '/auth/coughdrop/:id' => 'session#coughdrop_auth'
   get '/api/v1/token_check' => 'admin#token_check'
+  post '/api/v2/token' => 'session#token'
 
   scope 'api/v1', :module => 'api' do
     get "symbols/remote_search" => 'legacy#remote_search'

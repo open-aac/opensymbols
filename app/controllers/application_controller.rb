@@ -2,11 +2,41 @@ class ApplicationController < ActionController::Base
   before_action :check_token
 
   def check_token
-    if request.headers['Authorization']
-      check = ExternalSource.confirm_user_token(request.headers['Authorization'])
-      if check && check[:valid]
-        @authenticated = true
+    token = request.headers['Authorization'] || params['access_token'] || params['search_token']
+    if token
+      token = "search::#{token}" if token == params['search_token']
+      token = "token::#{token}" if token != params['search_token'] && !token.match(/::/)
+      type, more = token.split(/::/)
+      if type == 'user' || type == 'temp'
+        check = ExternalSource.confirm_user_token(token.sub(/^temp:/, 'user:'))
+        if check && check[:valid]
+          @admin = (type == 'user')
+          @valid_token = true
+          @limited_token = (type != 'user')
+          response.headers['Authorized'] = true
+        elsif check && check[:expired]
+          api_error(401, {error: 'token expired', token_expired: true}) 
+          return false
+        else
+          api_error(400, {error: 'invalid access token', invalid_token: true}) 
+          return false
+        end
+      else
+        options = token.split(/:/)
+        check = ExternalSource.confirm_token(token)
+        if check && check[:expired]
+          api_error(401, {error: 'token expired', token_expired: true}) 
+          return false
+        elsif !check || !check[:valid]
+          api_error(400, {error: 'invalid access token', invalid_token: true}) 
+          return false
+        end
+        @valid_token = true
+        @limited_token = !check[:full_access]
         response.headers['Authorized'] = true
+        if type == 'search'
+          @allowed_repos = check[:allowed_repos]
+        end
       end
     end
     true
@@ -16,21 +46,21 @@ class ApplicationController < ActionController::Base
     if cookies[:auth]
       check = ExternalSource.confirm_user_token(cookies[:auth])
       if check && check[:valid]
-        @authenticated = true
+        @admin = true
       end
     end
   end
 
   def valid_search_token?(token)
-    return false unless token
-    token, repos = params['search_token'].split(/:/)
-    source = ExternalSource.find_by(token: token)
-    return api_error(400, {error: 'invalid search token'}) unless source
-    @allowed_repos = (repos || '').split(/,/)
+    if !@valid_token
+      api_error(400, {error: 'invalid search token'})
+      return false
+    end
+    true
   end
 
   def require_authorization
-    if !@authenticated
+    if !@admin
       render json: {error: 'not authorized'}, status: 400
       return false
     end

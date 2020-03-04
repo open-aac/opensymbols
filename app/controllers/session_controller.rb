@@ -1,4 +1,26 @@
 class SessionController < ApplicationController
+  def token
+    if params['secret'].match(/^temp/)
+      token = params['secret']
+      check = ExternalSource.confirm_user_token(token.sub(/^temp:/, 'user:'))
+      if check[:valid]
+        user_id = params['user_id'] || Time.now.to_i
+        access_token = ExternalSource.user_token(user_id).sub(/^user:/, 'temp:')
+        render json: {access_token: access_token, expires: 24.hours.from_now.utc.iso8601}
+      else
+        return api_error 400, {error: "invalid token"}
+      end
+    else
+      source = ExternalSource.find_by(token: params['secret'])
+      if source
+        user_id = params['user_id'] == Time.now.to_i
+        render json: {access_token: source.access_token(Digest::MD5.hexdigest(user_id)[0, 10]), expires: 24.hours.from_now.utc.iso8601}
+      else
+        return api_error 400, {error: "invalid token"}
+      end
+    end
+  end
+
   def coughdrop_auth
     if params['id'] == 'check'
       if ENV['COUGHDROP_HOST'] && ENV['COUGHDROP_CLIENT_ID']

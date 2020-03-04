@@ -7,13 +7,13 @@ class Api::RepositoriesController < ApplicationController
   def show
     repo = SymbolRepository.find_by(repo_key: params['id'])
     return unless exists?(repo, params['id'])
-    render json: JsonApi::Repository.as_json(repo, wrapper: true, authenticated: @authenticated)
+    render json: JsonApi::Repository.as_json(repo, wrapper: true, authenticated: @admin)
   end
 
   def defaults
     repo = SymbolRepository.find_by(repo_key: params['repository_id'])
     return unless exists?(repo, params['repository_id'])
-    if repo.settings['protected'] && !@authenticated
+    if repo.settings['protected'] && !@admin
       return unless valid_search_token?(params['search_token'])
       return api_error(400, {error: 'unsupported repo'}) unless @allowed_repos.include?(repo.repo_key)
     end
