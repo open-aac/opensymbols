@@ -55,6 +55,29 @@
     max-width: 600px; 
     margin: 0 auto;
   } 
+  .nav-boxes li {
+    float: left;
+    width: 33%;
+    text-align: center;
+  }
+  .nav-boxes li a {
+    border: 1px solid #aaa;
+    margin: 5px;
+    border-radius: 5px;
+  }
+  .nav-boxes li a img {
+    width: 80%;
+    height: 50px;
+    border: 0;
+    margin: auto;
+    object-fit: contain;
+    objcet-position: center;
+  }
+  .nav-boxes li a .note {
+    font-size: 12px;
+    font-style: italic;
+    color: #888;
+  }
 </style>
 
 <%= render "shared/header" %>
@@ -74,7 +97,7 @@
     </form>
     <div id="message">
       <p>
-        This is a collection of <a href="http://creativecommons.org/">open-licensed</a>
+        OpenSymbols is a collection of <a href="http://creativecommons.org/">open-licensed</a>
         picture symbols that can be used for augmentative communication. 
         The collection pulls from multiple sources and currently includes 
         access to more than 
@@ -84,11 +107,20 @@
       <p>
         Use the search box to search for communication symbols from:
       </p>
-      <ul class="nav nav-tabs nav-stacked" style="width: 300px;">
-        <% SymbolRepository.all.select{|r| !r.settings['protected'] }.sort_by{|r| r.settings['name'] }.each do |repo| %>
-          <li><a href="/repositories/<%= repo.repo_key %>"><%= repo.settings['name'] %></a></li>
+      <ul class="nav nav-tabs nav-boxes">
+        <% SymbolRepository.all.select{|r| !r.settings['protected'] }.sort_by{|r| r.settings['n_symbols'] }.reverse.each do |repo| %>
+          <li style='float: left; width: 33%;'>
+            <a href="/repositories/<%= repo.repo_key %>">
+              <img id="symbol" src="/repositories/<%= repo.repo_key %>.png"/><br/>
+              <%= repo.settings['name'] %><br/>
+              <span class='note'><%= (repo.settings['default_attribution'] || {})['license'] || 'mixed licenses' %><br/> <%= commas(repo.settings['n_symbols']) %> symbols</span>
+            </a>
+          </li>
         <% end %>
-        <li><a href="/word_art">Make Your Own Basic Word Art</a></li>
+        <li><a href="/word_art">
+          <img src="https://d18vdu4p71yql0.cloudfront.net/libraries/noun-project/Speech-Bubble_719_g.svg"/>
+          Make Word Art<br/>&nbsp;<br/>&nbsp;
+        </a></li>
       </ul>
       <p>
       <% @private_repos = SymbolRepository.all.select{|r| r.settings['protected'] }.sort_by{|r| r.settings['name'] } %>
@@ -99,12 +131,20 @@
             <li><a href="/repositories/<%= repo.repo_key %>"><%= repo.settings['name'] %></a></li>
           <% end %>
         </ul>
-        <% end %>
-      The reason I'm putting this up is because there's no standard way
-      for people to easily look up all the possible open-licensed symbols.
-      I needed one, and I thought others might benefit from one as well.
-      <a href="/api/v1/symbols/search?q=mask">Here's my API</a>, more to come
-      (including docs!) eventually.
+      <% end %>
+      <p>
+        OpenSymbols exists as part of the <a href="https://www.openaac.org" target="_blank">OpenAAC Initiative</a>
+        to lower the barriers for AAC adoption and to make it easier
+        for teams to create AAC resources and activities without
+        needing to pay for proprietary symbol libraries.
+      </p>
+      <p>
+        If you are interested in using OpenSymbols in your
+        project, please reach out to us! We have a
+        <a href="/api">documented Open API</a> you can
+        use to search and embed symbols in your apps
+        or tools.
+      </p>
     </div>
     <div id="results" class="results">
     </div>

@@ -10,6 +10,7 @@
 .results {
   max-height: 500px;
   overflow: auto;
+  white-space: pre;
 }
 </style>
 <%= render 'shared/header' %>
@@ -23,10 +24,13 @@
     apps and web sites that would like to use the API to
     implement picture search inside their solution.</p>
     <p>OpenSymbols API access requires a shared secret. Please
-    contact us if you are interested in using OpenSymbols for
+    <a href="mailto:brian@coughdrop.com">contact us</a>
+    if you are interested in using OpenSymbols for
     search. All public APIs require an access token, which
     must either be set as <code>access_token</code> URL query
-    parameter, or as <code>Authorization</code> HTTP header.</p>
+    parameter, or as <code>Authorization</code> HTTP header.
+    Shared secrets should be kept secret, do not expose them
+    in JavaScript or compiled application code.</p>
     <p>To generate an access token, you will make an API call
     to the <code>secret</code> endpoint as defined below and
     receive a short-lived access token. This can be used for
@@ -37,6 +41,13 @@
     <code>secret</code> endpoint. If you make too many
     requests too quickly you will receive <code>429</code>
     throttling responses.</p>
+    <p>NOTE: Currently OpenSymbols returns long-term image
+    URLs. If the usage of these URLs gets too heavy we 
+    may need to implement expiiring URLs instead and ask
+    API users to download the images for future use
+    rather than reference them directly. We don't want to
+    have to do this, it makes life harder for everyone,
+    so please just be a good citizen and don't abuse things.</p>
   </div>
 </div>
 <div class="row call">
