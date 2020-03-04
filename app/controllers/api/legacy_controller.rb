@@ -24,6 +24,7 @@ class Api::LegacyController < ApplicationController
     if params['search_token']
       return unless valid_search_token?
       allow_protected = true
+      protected_repos = @allowed_repos
     end
     results = PictureSymbol.search(params['q'], params['locale'] || 'en', params['safe'] != '0', allow_protected, protected_repos)
     render json: results.to_json
