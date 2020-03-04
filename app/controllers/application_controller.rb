@@ -51,7 +51,7 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def valid_search_token?(token)
+  def valid_search_token?
     if !@valid_token
       api_error(400, {error: 'invalid search token'})
       return false

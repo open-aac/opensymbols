@@ -14,7 +14,7 @@ class Api::RepositoriesController < ApplicationController
     repo = SymbolRepository.find_by(repo_key: params['repository_id'])
     return unless exists?(repo, params['repository_id'])
     if repo.settings['protected'] && !@admin
-      return unless valid_search_token?(params['search_token'])
+      return unless valid_search_token?
       return api_error(400, {error: 'unsupported repo'}) unless @allowed_repos.include?(repo.repo_key)
     end
     return api_error(400, {error: 'limited to 200 words at a time'}) if (params['words'] || []).length > 200
