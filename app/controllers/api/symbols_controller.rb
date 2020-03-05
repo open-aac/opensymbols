@@ -4,8 +4,8 @@ class Api::SymbolsController < ApplicationController
   def index
     cross_origin
     return api_error(400, {error: 'invalid token'}) unless @valid_token
-    allow_protected = !!@admin
     protected_repos = (@admin && params['q'].match(/repo/)) ? ['*'] : []
+    allow_protected = !protected_repos.empty? && !!@admin
     if params['search_token']
       return unless valid_search_token?
       allow_protected = true
