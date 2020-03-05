@@ -5,10 +5,11 @@ class Api::SymbolsController < ApplicationController
     cross_origin
     return api_error(400, {error: 'invalid token'}) unless @valid_token
     protected_repos = (@admin && params['q'].match(/repo/)) ? ['*'] : []
-    allow_protected = !protected_repos.empty? && !!@admin
+    allow_protected = !!@admin
     if params['search_token']
       return unless valid_search_token?
       allow_protected = true
+      protected_repos = @allowed_repos
     end
     results = PictureSymbol.search(params['q'], params['locale'] || 'en', params['safe'] != '0', allow_protected, protected_repos)
     render json: results.to_json

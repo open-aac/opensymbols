@@ -20,7 +20,7 @@ class Api::LegacyController < ApplicationController
   def search
     cross_origin
     protected_repos = (@admin && params['q'].match(/repo/)) ? ['*'] : []
-    allow_protected = !protected_repos.empty? && !!@admin
+    allow_protected = !!@admin
     if params['search_token']
       return unless valid_search_token?
       allow_protected = true

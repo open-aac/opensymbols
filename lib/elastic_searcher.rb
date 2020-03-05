@@ -40,6 +40,8 @@ module ElasticSearcher
     repo_filter = opts[:repo_filter]
     safe_search = opts[:safe_search]
     allow_protected = opts[:allow_protected]
+    protected_repos = opts[:protected_repos] || []
+    allow_protected = false if protected_repos.empty? 
     escaped_characters = Regexp.escape('\\+-&|!(){}[]^~*?:')
     index = "open-symbols-#{locale}"
     q = q.to_s.gsub(/([#{escaped_characters}])/, '\\\\\1')
@@ -96,7 +98,6 @@ module ElasticSearcher
 #       }
     }
     repo_counts = {}
-    protected_repos = opts[:protected_repos] || []
     allow_search_all = allow_protected && protected_repos == ['*']
     
     res = raw_list['hits']['hits'].map{ |hit|
