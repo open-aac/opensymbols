@@ -56,6 +56,7 @@ class Api::LegacyController < ApplicationController
   end
 
   def proxy
+    cross_origin
     api_error(400, "") unless params['url'] && @valid_token
 
     uri = URI.parse(params['url']) rescue nil
