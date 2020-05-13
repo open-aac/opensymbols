@@ -32,18 +32,18 @@
     Shared secrets should be kept secret, do not expose them
     in JavaScript or compiled application code.</p>
     <p>To generate an access token, you will make an API call
-    to the <code>secret</code> endpoint as defined below and
+    to the <code>token</code> endpoint as defined below and
     receive a short-lived access token. This can be used for
     multiple requests but should not be considered a
     long-term token.</p>
     <p>If your access token expires you will receive
     a <code>401</code> HTTP response as defined in the
-    <code>secret</code> endpoint. If you make too many
+    <code>token</code> endpoint. If you make too many
     requests too quickly you will receive <code>429</code>
     throttling responses.</p>
     <p>NOTE: Currently OpenSymbols returns long-term image
     URLs. If the usage of these URLs gets too heavy we 
-    may need to implement expiiring URLs instead and ask
+    may need to implement expiring URLs instead and ask
     API users to download the images for future use
     rather than reference them directly. We don't want to
     have to do this, it makes life harder for everyone,

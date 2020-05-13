@@ -4,7 +4,7 @@ class SessionController < ApplicationController
       token = params['secret']
       check = ExternalSource.confirm_user_token(token.sub(/^temp:/, 'user:'))
       if check[:valid]
-        user_id = params['user_id'] || Time.now.to_i
+        user_id = params['user_id'] || Time.now.to_i.to_s
         access_token = ExternalSource.user_token(user_id).sub(/^user:/, 'temp:')
         render json: {access_token: access_token, expires: 24.hours.from_now.utc.iso8601}
       else
@@ -13,7 +13,7 @@ class SessionController < ApplicationController
     else
       source = ExternalSource.find_by(token: params['secret'])
       if source
-        user_id = params['user_id'] == Time.now.to_i
+        user_id = params['user_id'] || Time.now.to_i.to_s
         render json: {access_token: source.access_token(Digest::MD5.hexdigest(user_id)[0, 10]), expires: 24.hours.from_now.utc.iso8601}
       else
         return api_error 400, {error: "invalid token"}
