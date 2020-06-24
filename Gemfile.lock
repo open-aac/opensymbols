@@ -88,7 +88,7 @@ GEM
     pg (1.0.0)
     proxies (0.2.1)
     puma (3.11.4)
-    rack (2.0.7)
+    rack (2.2.3)
     rack-test (0.6.3)
       rack (>= 1.0)
     rails (5.0.7.2)
