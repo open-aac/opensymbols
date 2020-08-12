@@ -203,10 +203,16 @@ class PictureSymbol < ApplicationRecord
   def self.search(q, locale='en', safe_search=true, allow_protected=false, protected_repos=nil)
     q = q.to_s.downcase
     repo_filter = nil
+    favored_repo_filter = nil
     if q.match(/repo:[\w_-]+/)
       match = q.match(/repo:([\w_-]+)/)
       repo_filter = match && match[1]
       q = q.sub(/repo:([\w_-]+)/, '')
+    end
+    if q.match(/favor:[\w_-]+/)
+      match = q.match(/favor:([\w_-]+)/)
+      favored_repo_filter = match && match[1]
+      q = q.sub(/favor:([\w_-]+)/, '')
     end
     # TODO: https://gist.github.com/BrianTheCoder/217158
     if ElasticSearcher.enabled?
@@ -214,6 +220,7 @@ class PictureSymbol < ApplicationRecord
       begin
         search_opts = {
           repo_filter: repo_filter, 
+          favored_repo_filter: favored_repo_filter,
           safe_search: safe_search, 
           allow_protected: allow_protected,
           protected_repos: protected_repos || []
@@ -228,7 +235,7 @@ class PictureSymbol < ApplicationRecord
       bucket = ENV['S3_BUCKET']
       cdn = ENV['S3_CDN']
       if bucket && cdn
-        res = res.map do |sym|
+        res = (res || []).map do |sym|
           if sym['image_url'].match(/^https:\/\/#{bucket}\.s3\.amazonaws\.com\//) && cdn
             sym['image_url'] = sym['image_url'].sub(/^https:\/\/#{bucket}\.s3\.amazonaws\.com\//, cdn + "/")
           elsif sym['image_url'].match(/^https:\/\/s3\.amazonaws\.com\/#{bucket}\//) && cdn

@@ -1,5 +1,7 @@
 OpenSymbols
 ---------------------------
+[![OpenAAC](https://www.openaac.org/images//OpenAAC-advocate-blue.svg)](https://www.openaac.org/advocates.html)
+
 OpenSymbols is a ruby (Rails) server that makes it easy to collect 
 and search
 through multiple image repositories. It's built around the idea of

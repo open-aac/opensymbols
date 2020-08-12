@@ -38,6 +38,7 @@ module ElasticSearcher
     end
     opts ||= {}
     repo_filter = opts[:repo_filter]
+    favored_repo_filter = opts[:favored_repo_filter]
     safe_search = opts[:safe_search]
     allow_protected = opts[:allow_protected]
     protected_repos = opts[:protected_repos] || []
@@ -124,7 +125,12 @@ module ElasticSearcher
       # max of 5 results per repo
       [hit['repo_index'], hit['relevance']]
     }.reverse[0, 50]
+    if favored_repo_filter
+      # If there's a favored repo, move that repo's results to the front
+      res = (res[0, 10].select{|s| s['repo_key'] == favored_repo_filter } + res).uniq
+    end
     if res[0] && res[0]['protected_symbol'] && res[0, 10].detect{|s| !s['protected_symbol'] }
+      # If a mix of protected and non-protected, favor non-protected
       res = ([res[0, 10].detect{|s| !s['protected_symbol'] }] + res).uniq
     end
     res
