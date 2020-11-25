@@ -127,7 +127,7 @@ class PictureSymbol < ApplicationRecord
     repo = SymbolRepository.find_by(repo_key: self.repo_key)
     res = {}
     (self.settings['locales'] || {}).each do |locale, localized|
-      res[locale] = {}.merge(localized)
+      res[locale] = {}.merge(localized.except('uses'))
       modifier = RepositoryModifier.find_for(repo, locale)
       if modifier
         res[locale]['defaults'] = modifier.settings['defaults'].select{|keyword, symbol_key| symbol_key == self.symbol_key}.map(&:first)
@@ -288,11 +288,11 @@ class PictureSymbol < ApplicationRecord
     (data['locales'] || {}).each do |loc, hash|
       symbol.settings['locales'][loc] ||= {}
       if loc == locale
-        symbol.settings['locales'][loc]['name'] ||= hash['name']
-        symbol.settings['locales'][loc]['description'] ||= hash['description']
+        symbol.settings['locales'][loc]['name'] ||= hash['name'] if hash['name']
+        symbol.settings['locales'][loc]['description'] ||= hash['description'] || hash['decsription'] if (hash['description'] || hash['decsription'])
       else
-        symbol.settings['locales'][loc]['name'] = hash['name']
-        symbol.settings['locales'][loc]['description'] = hash['description']
+        symbol.settings['locales'][loc]['name'] = hash['name'] if hash['name']
+        symbol.settings['locales'][loc]['description'] = hash['description'] || hash['decsription'] if (hash['description'] || hash['decsription'])
       end
     end
     symbol.save

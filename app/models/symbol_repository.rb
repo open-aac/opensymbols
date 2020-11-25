@@ -8,6 +8,8 @@ class SymbolRepository < ApplicationRecord
   secure_serialize :settings
   before_save :generate_defaults
 
+  EXPECTED_LOCALES = ['en', 'ar', 'cs', 'da', 'de', 'es', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko', 'nl', 'no', 'pl', 'pt', 'ru', 'sv', 'tr', 'vi', 'zh']
+
   def generate_defaults
     self.settings ||= {}
     self.settings['active'] = true if self.settings['active'] == nil
@@ -91,6 +93,63 @@ class SymbolRepository < ApplicationRecord
       end
     end
     res
+  end
+
+  def assert_translations(coughdrop_access_token)
+    PictureSymbol.where(repo_key: self.repo_key).find_in_batches(batch_size: 50) do |batch|
+      words = []
+      recs = []
+      batch.each do |word|
+        words << word.settings['name']
+        recs << word
+      end
+      puts "#{words[0]} .. #{words[-1]}"
+      EXPECTED_LOCALES.each do |loc|
+        next if loc == 'en'
+        lookups = []
+        recs.each do |word|
+          trans = (word.settings['locales'] || {})[loc] || {}
+          if !trans['name'] && word.settings['name']
+            lookups << word.settings['name']
+          end
+          if !trans['description'] && word.settings['description'] && word.settings['description'].length > 0
+            lookups << word.settings['description']
+          end
+        end
+        puts "  #{loc} - adding #{lookups.length}..."
+        json = nil
+        res = nil
+        if lookups.length > 0
+          res = Typhoeus.post("#{ENV['COUGHDROP_HOST']}/api/v1/users/self/translate", 
+            headers: {'Content-Type' => 'application/json'},
+            body: {
+              access_token: coughdrop_access_token,
+              words: lookups, 
+              source_lang: 'en', 
+              destination_lang: loc
+            }.to_json)
+          json = JSON.parse(res.body) rescue nil
+        end
+        if json
+          puts "    found #{(json['translations'] || {}).keys.length}"
+          recs.each do |word|
+            word.settings['locales'] ||= {}
+            if json['translations'] && (json['translations'][word.settings['name']] || json['translations'][word.settings['description']])
+              word.instance_variable_set('@changed_localed', true)
+              word.settings['locales'][loc] ||= {}
+              word.settings['locales'][loc]['name'] = json['translations'][word.settings['name']] if json['translations'][word.settings['name']]
+              word.settings['locales'][loc]['description'] = json['translations'][word.settings['description']] if json['translations'][word.settings['description']]
+            end
+          end
+        else
+          puts "    error #{res && res.code}"
+        end
+      end
+      recs.each{|word| 
+        word.save if word.instance_variable_get('@changed_localed')
+        word.instance_variable_set('@changed_localed', false)
+      }
+    end
   end
 
   def self.core_lists
