@@ -87,7 +87,7 @@ GEM
     permissable-coughdrop (0.3.2)
     pg (1.0.0)
     proxies (0.2.1)
-    puma (3.11.4)
+    puma (3.12.6)
     rack (2.0.7)
     rack-test (0.6.3)
       rack (>= 1.0)
@@ -174,7 +174,7 @@ DEPENDENCIES
   nokogiri (>= 1.10.4)
   permissable-coughdrop
   pg
-  puma (~> 3.0)
+  puma (~> 3.12)
   rails (~> 5.0.7)
   s3
   sass-rails (~> 5.0)
