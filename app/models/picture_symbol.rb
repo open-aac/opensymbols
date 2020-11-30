@@ -35,7 +35,14 @@ class PictureSymbol < ApplicationRecord
     self.generate_use_counts
   end
 
+  def save_without_indexing
+    @skip_indexing = true
+    self.save
+    @skip_indexing = false
+  end
+
   def submit_to_external_index
+    return true if @skip_indexing
     locales = self.settings['locales'].keys | ['en']
     locales.each do |locale|
       if ElasticSearcher.enabled?

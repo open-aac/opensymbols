@@ -97,6 +97,7 @@ class SymbolRepository < ApplicationRecord
 
   def assert_translations(coughdrop_access_token)
     repo = self
+    pre_translate_cutoff = Date.parse('5 Dec, 2020').to_time.to_i
     PictureSymbol.where(repo_key: repo.repo_key).find_in_batches(batch_size: 50) do |batch|
       words = []
       recs = []
@@ -137,12 +138,25 @@ class SymbolRepository < ApplicationRecord
             recs.each do |word|
               word.settings['locales'] ||= {}
               word.settings['batch_translations'] ||= {}
+              # Early-translated symbols didn't have
+              # the google-translate flags set yet
+              if !word.settings['locales'][loc]
+                word.settings['locales'][loc] ||= {}
+                word.settings['locales'][loc]['gtn'] = true
+                word.settings['locales'][loc]['gtd'] = true
+              end
               word.settings['batch_translations'][loc] = Time.now.to_i
               word.instance_variable_set('@changed_locale', true)
               if json['translations'] && (json['translations'][word.settings['name']] || json['translations'][word.settings['description']])
                 word.settings['locales'][loc] ||= {}
-                word.settings['locales'][loc]['name'] = json['translations'][word.settings['name']] if json['translations'][word.settings['name']]
-                word.settings['locales'][loc]['description'] = json['translations'][word.settings['description']] if json['translations'][word.settings['description']]
+                if json['translations'][word.settings['name']] && word.settings['locales'][loc]['gtn']
+                  word.settings['locales'][loc]['gtn'] = true
+                  word.settings['locales'][loc]['name'] = json['translations'][word.settings['name']] 
+                end
+                if json['translations'][word.settings['description']] && word.settings['locales'][loc]['gtd']
+                  word.settings['locales'][loc]['description'] = json['translations'][word.settings['description']] 
+                  word.settings['locales'][loc]['gtd'] = true
+                end
               end
             end
           else
