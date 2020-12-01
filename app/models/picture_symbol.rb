@@ -56,9 +56,12 @@ class PictureSymbol < ApplicationRecord
 
   def submit_to_external_index
     return true if @skip_indexing
-    locales = @locales_to_index || self.settings['locales'].keys | ['en']
-    @locales_to_index = nil
-    locales.each do |locale|
+    locales = self.settings['locales'].keys | ['en']
+    if @locales_to_index
+      locales = locales & @locales_to_index
+      @locales_to_index = nil
+    end
+    locales.uniq.each do |locale|
       if ElasticSearcher.enabled?
         if self.settings['enabled'] == false
           ElasticSearcher.remove_symbol(self, locale)
