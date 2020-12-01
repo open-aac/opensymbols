@@ -41,9 +41,23 @@ class PictureSymbol < ApplicationRecord
     @skip_indexing = false
   end
 
+  # syms = PictureSymbol.where(repo_key: ['coughdrop','tawasol','arasaac']); syms.count
+  # syms.find_in_batches(batch_size: 100) do |batch|
+  #   batch.each do |sym|
+  #     SymbolRepository::EXPECTED_LOCALES.each do |loc|
+  #       if sym.settings['batch_translations'] && sym.settings['batch_translations'][loc]
+  #         sym.settings['locales'][loc]['gtn'] = true if sym.settings['locales'][loc] && sym.settings['locales'][loc]['name']
+  #       end
+  #     end
+  #     sym.save_without_indexing
+  #   end
+  #   puts "..."
+  # end
+
   def submit_to_external_index
     return true if @skip_indexing
-    locales = self.settings['locales'].keys | ['en']
+    locales = @locales_to_index || self.settings['locales'].keys | ['en']
+    @locales_to_index = nil
     locales.each do |locale|
       if ElasticSearcher.enabled?
         if self.settings['enabled'] == false

@@ -7,6 +7,7 @@ module ElasticSearcher
       opts[:user] = ENV['ELASTIC_USER']
       opts[:password] = ENV['ELASTIC_TOKEN']
     end
+    opts[:request_timeout] = 10
     @@client ||= Elasticsearch::Client.new(opts)
     @@version ||= @@client.info['version']['number']
     @@client
@@ -211,6 +212,7 @@ module ElasticSearcher
   
   def self.search(opts)
     opts[:index] = self.env_index(opts[:index])
+    opts[:timeout] = '10s'
     self.searcher.search(opts)
   end
   

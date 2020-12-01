@@ -102,6 +102,7 @@ class SymbolRepository < ApplicationRecord
       words = []
       recs = []
       batch.each do |word|
+        word.instance_variable_set('@locales_to_index', [])
         words << word.settings['name']
         recs << word
       end
@@ -148,6 +149,9 @@ class SymbolRepository < ApplicationRecord
               word.settings['batch_translations'][loc] = Time.now.to_i
               word.instance_variable_set('@changed_locale', true)
               if json['translations'] && (json['translations'][word.settings['name']] || json['translations'][word.settings['description']])
+                index_locs = word.instance_variable_get('@locales_to_index') || []
+                index_locs << loc
+                word.instance_variable_set('@locales_to_index', index_locs.uniq)
                 word.settings['locales'][loc] ||= {}
                 if json['translations'][word.settings['name']] && word.settings['locales'][loc]['gtn']
                   word.settings['locales'][loc]['gtn'] = true
