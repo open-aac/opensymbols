@@ -122,7 +122,7 @@ class PictureSymbol < ApplicationRecord
     symbol = self
     repo = SymbolRepository.find_by(repo_key: self.repo_key)
     # only remember as the default for known core words,
-    # otherwise justs boost without marking as default
+    # otherwise just boost without marking as default
     core_lists = SymbolRepository.core_lists
     mods = {}
     if symbol && repo
@@ -285,7 +285,7 @@ class PictureSymbol < ApplicationRecord
     end
   end
 
-  def self.generate_for_repo(repo, data, skip_update=false)
+  def self.generate_for_repo(repo, data, skip_update=false, skip_indexing=false)
     repo_key = repo.repo_key
     fn = data['filename']
     symbol_key = PictureSymbol.keyify(data['name'], fn)
@@ -293,6 +293,7 @@ class PictureSymbol < ApplicationRecord
     locale = data['locale'] || 'en'
     already_processed = !!symbol.id
     return if already_processed && skip_update
+    symbol.instance_variable_set('@skip_indexing', true)
     symbol.settings ||= {}
     symbol.settings['image_url'] = data['path'] ? "/#{data['path']}" : "/libraries/#{repo.repo_key}/#{data['filename']}"
     symbol.settings['name'] = data['name']

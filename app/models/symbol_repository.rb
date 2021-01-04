@@ -20,7 +20,7 @@ class SymbolRepository < ApplicationRecord
     self.settings['n_symbols'] = 0 if self.settings['protected']
   end
 
-  def self.retrieve_from_manifest(key, skip_update=false)
+  def self.retrieve_from_manifest(key, skip_update=false, skip_indexing=false)
     repo_attributes, symbols = S3Bucket.retrieve_from_manifest(key)
     repo = SymbolRepository.find_or_initialize_by(:repo_key => key)
     repo.settings ||= {}
@@ -34,7 +34,7 @@ class SymbolRepository < ApplicationRecord
     puts "repo #{repo.id ? 'found' : 'created'} - #{symbols.length} symbols found"
     symbols.each_with_index do |symbol, idx|
       puts idx if idx % 100 == 0 && skip_update
-      PictureSymbol.generate_for_repo(repo, symbol, skip_update)
+      PictureSymbol.generate_for_repo(repo, symbol, skip_update, skip_indexing)
     end
     repo.reload
     repo.settings['n_symbols'] = PictureSymbol.where(repo_key: repo.repo_key).count
@@ -150,17 +150,18 @@ class SymbolRepository < ApplicationRecord
               word.instance_variable_set('@changed_locale', true)
               if json['translations'] && (json['translations'][word.settings['name']] || json['translations'][word.settings['description']])
                 index_locs = word.instance_variable_get('@locales_to_index') || []
-                index_locs << loc
-                word.instance_variable_set('@locales_to_index', index_locs.uniq)
                 word.settings['locales'][loc] ||= {}
                 if json['translations'][word.settings['name']] && word.settings['locales'][loc]['gtn']
+                  index_locs << loc if word.settings['locales'][loc]['name'] != json['translations'][word.settings['name']] 
                   word.settings['locales'][loc]['gtn'] = true
                   word.settings['locales'][loc]['name'] = json['translations'][word.settings['name']] 
                 end
                 if json['translations'][word.settings['description']] && word.settings['locales'][loc]['gtd']
+                  index_locs << loc if word.settings['locales'][loc]['description'] != json['translations'][word.settings['description']] 
                   word.settings['locales'][loc]['description'] = json['translations'][word.settings['description']] 
                   word.settings['locales'][loc]['gtd'] = true
                 end
+                word.instance_variable_set('@locales_to_index', index_locs.uniq)
               end
             end
           else
