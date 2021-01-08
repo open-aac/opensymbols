@@ -169,6 +169,13 @@ module ElasticSearcher
     'tr' => 'turkish'
   }
 
+  def self.bulk(&block)
+    @bulk_indexing = []
+    block.call
+    self.searcher.bulk(body: @bulk_indexing)
+    @bulk_indexing = nil
+  end
+
   def self.index(opts)
     opts[:index] = self.env_index(opts[:index])
     locale = opts.delete(:locale)
@@ -191,21 +198,42 @@ module ElasticSearcher
     }
     @mappers ||= {}
     begin
-      self.searcher.index(opts)
+      if @bulk_indexing
+        @bulk_indexing << {
+          'index' => {
+            '_index' => opts[:index],
+            '_type' => opts[:type],
+            '_id' => opts[:id]  
+          }
+        }
+        @bulk_indexing << opts[:body]
+      else
+        self.searcher.index(opts)
+      end
     rescue => e
       puts JSON.pretty_generate(opts)
       raise e
     end
-    if (!@mappers[opts[:index]] || @mappers[opts[:index]] < 30.minutes.ago)
-      self.searcher.indices.put_mapping index: opts[:index], type: opts[:type], body: update
-      @mappers[opts[:index]] = Time.now
-    end
+    # if (!@mappers[opts[:index]] || @mappers[opts[:index]] < 30.minutes.ago)
+    #   self.searcher.indices.put_mapping index: opts[:index], type: opts[:type], body: update
+    #   @mappers[opts[:index]] = Time.now
+    # end
   end
   
   def self.remove(opts)
     opts[:index] = self.env_index(opts[:index])
     begin
-      self.searcher.delete(opts)
+      if @bulk_indexing
+        @bulk_indexing << {
+          'delete' => {
+            '_index' => opts[:index],
+            '_type' => opts[:type],
+            '_id' => opts[:id]  
+          }
+        }
+      else
+        self.searcher.delete(opts)
+      end
     rescue => e
     end
   end
