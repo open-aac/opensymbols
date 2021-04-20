@@ -182,6 +182,7 @@ module ElasticSearcher
   def self.index(opts)
     opts[:index] = self.env_index(opts[:index])
     locale = opts.delete(:locale)
+    next if locale == 'hmn'
     analyzer = MAPPING_LOCALES[locale] || 'standard'
     type = @@version.to_i < 3 ? 'string' : 'text'
     update = {
