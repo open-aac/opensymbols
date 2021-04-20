@@ -218,10 +218,10 @@ module ElasticSearcher
       puts JSON.pretty_generate(opts)
       raise e
     end
-    if (!@mappers[opts[:index]] || @mappers[opts[:index]] < 90.minutes.ago)
-      self.searcher.indices.put_mapping index: opts[:index], type: opts[:type], body: update
-      @mappers[opts[:index]] = Time.now
-    end
+    # if (!@mappers[opts[:index]] || @mappers[opts[:index]] < 90.minutes.ago)
+    #   self.searcher.indices.put_mapping index: opts[:index], type: opts[:type], body: update
+    #   @mappers[opts[:index]] = Time.now
+    # end
   end
   
   def self.remove(opts)
