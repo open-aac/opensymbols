@@ -211,7 +211,11 @@ class PictureSymbol < ApplicationRecord
     end
     self.settings['locales'][locale] = localized
     self.settings['rnd'] = rand(999)
-    self.save
+    if self.updated_at < 72.hours.ago
+      self.save
+    else
+      self.save_without_indexing
+    end
   end
 
   def recommended_for_keyword(keyword, locale, user_id)
