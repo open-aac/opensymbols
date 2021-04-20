@@ -75,8 +75,9 @@ module ElasticSearcher
       query[:bool][:filter].select!{|f| !f[:term].keys.include?(:protected_symbol) }
     end
 
-    boost = {}
-    boost[env_index(index)] = 3
+    boost = []
+    boost << {"#{env_index(index)}" => 3}
+    # boost[env_index(index)] = 3
     raw_list = self.search index: 'open-symbols-*', type: 'symbol', body: {
       from: 0,
       size: 200,
