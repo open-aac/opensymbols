@@ -6,7 +6,7 @@ class PictureSymbol < ApplicationRecord
   after_save :submit_to_external_index
 
   def generate_defaults
-    self.random = rand(99999999)
+    self.random ||= rand(99999999)
     self.settings ||= {}
     self.settings['locales'] ||= {}
     self.settings['locales'].each do |loc, hash|
@@ -31,6 +31,8 @@ class PictureSymbol < ApplicationRecord
         end
       end
     end
+    self.unsafe_result = !!self.settings['unsafe_result']
+    self.has_skin = !!self.settings['has_skin']
     self.generate_search_string
     self.generate_use_counts
   end
@@ -389,6 +391,7 @@ class PictureSymbol < ApplicationRecord
       :image_url => self.full_image_url,
       :search_string => localized['search_string'] || self.settings['search_string'],
       :unsafe_result => !self.safe_result?,
+      :skins => !!(self.settings['has_skin'] && self.settings['has_variants']),
       :_href => "/api/v1/symbols/#{self.repo_key}/#{self.symbol_key}?id=#{self.id}",
       :details_url => "/symbols/#{self.repo_key}/#{self.symbol_key}?id=#{self.id}"
     }  

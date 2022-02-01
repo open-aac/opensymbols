@@ -38,6 +38,7 @@ Rails.application.routes.draw do
     end
     resources :symbols, :constraints => {:id => /[a-zA-Z0-9_-]+\/[a-zA-Z0-9_:%-]+/} do
       post 'safe'
+      post 'skin'
       post 'boost'
       post 'default'
     end

@@ -77,11 +77,18 @@
       <dt>repository:</dt>
         <dd><a href="<%= @repo.settings['url'] %>"><%= @repo.settings['name'] || 'unknown' %></a></dd>
       <span class='authenticated'>
-        <dt>safe search:</dt>
+        <dt style='padding: 10px 0;'>safe search:</dt>
           <dd>
             <label style='padding: 10px 0;'>
               <input type='checkbox' <%= 'checked' if !@symbol[:unsafe_result] %> id='safe' style='display: inline;'/>
               allow in safe search results
+            </label>
+          </dd>
+        <dt style='padding: 10px 0;'>skin tones:</dt>
+          <dd>
+            <label style='padding: 10px 0;'>
+              <input type='checkbox' <%= 'checked' if !@symbol[:has_skin] %> id='skin' style='display: inline;'/>
+              symbol has skin tones visible
             </label>
           </dd>
       </span>

@@ -1,16 +1,38 @@
 (function() {
   var repo_key = $("#symbols").attr('data-repo_key');
+  var render_symbol = function(symbol) {
+    var skin = $("#skin_tone").val();
+    var sym = Object.assign({}, symbol);
+    if(skin && skin != 'default') {
+      if(sym.image_url && sym.image_url.match(/varianted-skin\.\w+$/)) {
+        sym.image_url = sym.image_url.replace(/varianted-skin\./, 'variant-' + skin);
+      }
+    }
+    return Handlebars.templates['symbol_result'](sym);
+  };
   function load_symbols() {
     if(!load_symbols.next_url) {
       load_symbols.next_url = "/api/v1/repositories/" + repo_key + "/symbols";
+      if(filter == 'unsafe') {
+        load_symbols.next_url = load_symbols.next_url + "&unsafe=1";
+      } else if(filter == 'skins') {
+        load_symbols.next_url = load_symbols.next_url + "&has_skin=1";
+      }
     }
+    var filter = $("#base_search_filter").val();
     $("#more_symbols").text("Loading More Symbols...").show();
     session.ajax({
       type: 'GET',
       url: load_symbols.next_url,
       success: function(data) {
         for(var idx = 0; idx < data.symbols.length; idx++) {
-          var template = Handlebars.templates['symbol_result'](data.symbols[idx]);
+          var sym = Object.assign({}, data.symbols[idx]);
+          if(skin && skin != 'default') {
+            if(sym.image_url.match(/varianted-skin\.\w+$/)) {
+              sym.image_url = sym.image_url.replace(/varianted-skin\./, 'variant-' + skin);
+            }
+          }
+          var template = render_symbol(data.symbols[idx]);
           $("#symbols").append(template);
         }
         if(data.meta && data.meta.next_url) {
@@ -83,7 +105,7 @@
       if(symbol.image_url && symbol.image_url.match(/^\//)) {
         symbol.image_url = "https://s3.amazonaws.com/" + S3Bucket + symbol.image_url;
       }
-      var template = Handlebars.templates['symbol_result'](symbol);
+      var template = render_symbol(symbol);
       $("#search_results").empty();
       $("#search_results").append(template);
       $("#search_results .result").css({float: 'none', display: 'inline-block'});
@@ -93,7 +115,7 @@
       $("#search").click();  
     }
   });
-  var search = function(term) {
+  var search = function(term, unsafe) {
     var search_success = function() { };
     var search_error = function() { };
     var done = false;
@@ -111,7 +133,7 @@
         }
       }
     };
-    session.getJSON("/api/v1/symbols/search?q=" + term, function(data) {
+    session.getJSON("/api/v1/symbols/search?q=" + term + "&safe=" + (unsafe ? '0' : '1'), function(data) {
       done = data;
       search_success(data);
     }).fail(function() {
@@ -127,14 +149,20 @@
   $("#base_search").click(function(event) {
     event.preventDefault();
     var term = $("#base_search_text").val();
+    var filter = $("#base_search_filter").val();
     if(term && term.length > 0) {
       term = term + " repo:" + repo_key;
+      if(filter == 'unsafe') {
+
+      } else if(filter == 'skins') {
+        
+      }
       $("#symbols").empty().text("Loading results...");
-      search(term).then(function(data) {
+      search(term, filter == 'unsafe').then(function(data) {
         $("#symbols").empty()
         for(var idx in data) {
           var symbol = data[idx];
-          var template = Handlebars.templates['symbol_result'](symbol);
+          var template = render_symbol(symbol);
           $("#symbols").append(template);
         }
         if(data.length == 0) {
@@ -170,7 +198,7 @@
           if(symbol.image_url && symbol.image_url.match(/^\//)) {
             data[index].image_url = "https://s3.amazonaws.com/" + S3Bucket + symbol.image_url;
           }
-          var template = Handlebars.templates['symbol_result'](symbol);
+          var template = render_symbol(symbol);
           $("#search_results").append(template);
         }
       }, function(err) {
@@ -192,7 +220,7 @@
       success: function(data) {
         known_defaults[$("#default_word").val()] = data.symbol;
         $("#search_results").empty();
-        var template = Handlebars.templates['symbol_result'](result);
+        var template = render_symbol(result);
         $("#search_results").append(template);
         $("#search_results .result").css({float: 'none', display: 'inline-block'});
       },

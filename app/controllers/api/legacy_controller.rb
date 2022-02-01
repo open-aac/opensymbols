@@ -6,13 +6,25 @@ class Api::LegacyController < ApplicationController
     return api_error(400, {error: 'not found'}) unless repo
     page = params['page'].to_i
     per_page = 60
-    symbols = PictureSymbol.where(repo_key: repo.repo_key)[page * per_page, per_page]
-    more = PictureSymbol.where(repo_key: repo.repo_key)[page * (per_page + 1)]
+    lookup = PictureSymbol.where(repo_key: repo.repo_key)
+    if params['unsafe'] == '1'
+      lookup = lookup.where(unsafe_result: true)
+    elsif params['has_skin'] == '1'
+      lookup = lookup.where(has_skin: true)
+    end
+
+    symbols = lookup[page * per_page, per_page]
+    more = lookup[page * (per_page + 1)]
     res = {symbols: symbols.map{|s| s.obj_json }}
     if more
       res[:meta] = {
         next_url: "#{request.protocol}#{request.host_with_port}/api/v1/repositories/#{params['repo_key']}/symbols?page=#{page + 1}"
       }
+      if params['unsafe'] == '1'
+        res[:meta][:next_url] += "&unsafe=1"
+      elsif params['has_skin'] == '1'
+        res[:meta][:next_url] += "&has_skin=1"
+      end
     end
     render json: res.to_json
   end

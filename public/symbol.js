@@ -150,7 +150,20 @@
       });
     }
   });
-
+  $("#skin").change(function(event) {
+    var has_skin = $("#skin")[0].checked;
+    session.ajax({
+      url: '/api/v2/symbols/' + symbol.repo_key + '/' + symbol.symbol_key + '/skin',
+      data: {has_skin: has_skin},
+      type: 'POST',
+      dataType: 'json',
+      success: function(data) {
+      },
+      error: function(xhr) {
+        alert('Error updating symbol settings');
+      }
+    });
+  })
   $("#safe").change(function(event) {
     var safe = $("#safe")[0].checked;
     session.ajax({

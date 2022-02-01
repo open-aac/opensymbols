@@ -85,11 +85,29 @@
         <dd><%= commas(@repo.settings['n_protected_symbols'] || @repo.settings['n_symbols']) %></dd>
       <dt>Description:</dt>
         <dd><%= @repo.settings['description'] %>&nbsp;</dd>
+      <dt>Skin Tone:</dt>
+        <dd>
+          <select id='skin_tone'>
+            <option value='default'>Default</option>
+            <option value='light'>Light</option>
+            <option value='medium'>Medium</option>
+            <option value='medium-dark'>Medium-Dark</option>
+            <option value='dark'>Dark</option>
+          </select>
+      </dd>
       <dt>Search:</dt>
         <dd>
-          <input type='text' placeholder='search' id='base_search_text' style='margin-bottom: 0; width: 200px;'/>
-          <a href='#' class='btn' id='base_search'>Go</a>
-          <a href='#' class='btn' id='clear_base_search'>Clear</a>
+          <select id='base_search_filter'>
+            <option>[ Filter by... ]</option>
+            <option value='none'>No Filter</option>
+            <option value='unsafe'>Unsafe Results</option>
+            <option value='skins'>Skinned Results</option>
+          </select>
+          <div>
+            <input type='text' placeholder='search' id='base_search_text' style='margin-bottom: 0; width: 200px;'/>
+            <a href='#' class='btn' id='base_search'>Go</a>
+            <a href='#' class='btn' id='clear_base_search'>Show All</a>
+          </div>
         </dd>
     </dl>
     <div class='authenticated'>

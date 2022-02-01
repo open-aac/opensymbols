@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200229055424) do
+ActiveRecord::Schema.define(version: 20220201183159) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -29,11 +29,15 @@ ActiveRecord::Schema.define(version: 20200229055424) do
     t.string   "repo_key"
     t.string   "symbol_key"
     t.boolean  "enabled"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+    t.boolean  "has_skin"
+    t.boolean  "unsafe_result"
     t.index ["enabled"], name: "index_picture_symbols_on_enabled", using: :btree
     t.index ["random"], name: "index_picture_symbols_on_random", using: :btree
+    t.index ["repo_key", "has_skin"], name: "index_picture_symbols_on_repo_key_and_has_skin", using: :btree
     t.index ["repo_key", "symbol_key"], name: "index_picture_symbols_on_repo_key_and_symbol_key", unique: true, using: :btree
+    t.index ["repo_key", "unsafe_result"], name: "index_picture_symbols_on_repo_key_and_unsafe_result", using: :btree
   end
 
   create_table "repository_modifiers", force: :cascade do |t|

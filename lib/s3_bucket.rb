@@ -65,39 +65,13 @@ module S3Bucket
         if res == true
           puts "already rasterized #{symbol['filename']}"
         elsif !res.success? || force
-          puts "rasterizing #{symbol['filename']}"
-          # download the image
-          file = Tempfile.new(["stash", '.svg'])
-          file.binmode
-          res = Typhoeus.get(URI.escape(url), followlocation: true)
-          file.write(res.body)
-          # convert it locally
-          begin
-            Timeout::timeout(5) do
-              `convert -background none -density 300 -resize 400x400 -gravity center -extent 400x400 #{file.path} #{file.path}.raster.png`
-            end
-          rescue Timeout::Error
-            puts "  rasterizing error, took too long"
-          end
-          # upload the rasterized version
-          file.close
-
-          params = remote_upload_params("#{symbol['path']}.raster.png", 'image/png')
-          post_params = params[:upload_params]
-          if File.exist?("#{file.path}.raster.png")
-            post_params[:file] = File.open("#{file.path}.raster.png", 'rb')
-        
-            # upload to s3 from tempfile
-            res = Typhoeus.post(params[:upload_url], body: post_params)
-            if res.success?
-              puts "  success!"
-              rasters << symbol
-            else
-              errors << symbol
-            end
+          raster = ColorShift.rasterize(symbol['path'], )
+          if raster[:success]
+            rasters << symbol
           else
             errors << symbol
           end
+
         end
       end
     end

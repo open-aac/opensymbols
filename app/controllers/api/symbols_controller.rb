@@ -55,6 +55,16 @@ class Api::SymbolsController < ApplicationController
     render json: JsonApi::Symbol.as_json(symbol, wrapper: true, authenticated: @admin)
   end
 
+  def skin
+    repo_key, symbol_key = params['symbol_id'].split(/\//)
+    symbol = PictureSymbol.find_by(repo_key: repo_key, symbol_key: symbol_key)
+    symbol = nil if symbol && symbol.settings['enabled'] == false
+    return unless exists?(symbol, params['symbol_id'])
+    symbol.settings['has_skin'] = params['has_skin'] == 'true'
+    symbol.save
+    render json: JsonApi::Symbol.as_json(symbol, wrapper: true, authenticated: @admin)
+  end
+
   def boost
     repo_key, symbol_key = params['symbol_id'].split(/\//)
     symbol = PictureSymbol.find_by(repo_key: repo_key, symbol_key: symbol_key)
